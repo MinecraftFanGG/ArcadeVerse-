@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="app.js"></script>
+   
+    <title>ArcadeVerse | The Ultimate Gaming Encyclopedia</title>
+    <style>
+        /* --- CSS VARIABLES & THEME --- */
+        :root {
+            --bg-dark: #0f0c1b;
+            --bg-card: #1d1833;
+            --accent-neon: #00f0ff;
+            --accent-purple: #9d4edd;
+            --text-main: #f8f9fa;
+            --text-muted: #a0a5c0;
+            --border-glow: rgba(0, 240, 255, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* --- HEADER & NAVIGATION --- */
+        header {
+            background: linear-gradient(90deg, #16122c 0%, #0f0c1b 100%);
+            padding: 1.5rem 2rem;
+            border-bottom: 2px solid var(--accent-purple);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-main);
+            text-shadow: 0 0 10px var(--accent-neon);
+        }
+
+        .logo span {
+            color: var(--accent-neon);
+        }
+
+        .search-container {
+            position: relative;
+            flex: 0 1 400px;
+            width: 100%;
+        }
+
+        #search-bar {
+            width: 100%;
+            padding: 0.8rem 1.2rem;
+            background-color: var(--bg-card);
+            border: 1px solid var(--accent-purple);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        #search-bar:focus {
+            border-color: var(--accent-neon);
+            box-shadow: 0 0 15px var(--border-glow);
+        }
+
+        /* --- MAIN LAYOUT --- */
+        .container {
+            display: flex;
+            flex: 1;
+            position: relative;
+        }
+
+        /* --- SIDEBAR FILTER --- */
+        aside {
+            width: 250px;
+            background-color: #141026;
+            padding: 2rem 1.5rem;
+            border-right: 1px solid rgba(157, 78, 221, 0.2);
+        }
+
+        aside h3 {
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            color: var(--accent-neon);
+            margin-bottom: 1rem;
+            letter-spacing: 1px;
+        }
+
+        .filter-btn {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 0.8rem 1rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background-color: var(--accent-purple);
+            color: var(--text-main);
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(157, 78, 221, 0.4);
+        }
+
+        /* --- ENCYCLOPEDIA GRID --- */
+        main {
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-glow);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px var(--border-glow);
+            border-color: var(--accent-neon);
+        }
+
+        .card-banner {
+            height: 120px;
+            background: linear-gradient(135deg, var(--accent-purple) 0%, #4c1c76 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+        .card[data-cat="rpg"] .card-banner { background: linear-gradient(135deg, #c0392b 0%, #6b1a1a 100%); }
+        .card[data-cat="action"] .card-banner { background: linear-gradient(135deg, #e67e22 0%, #784400 100%); }
+        .card[data-cat="strategy"] .card-banner { background: linear-gradient(135deg, #1abc9c 0%, #0a5c48 100%); }
+        .card[data-cat="platformer"] .card-banner { background: linear-gradient(135deg, #f1c40f 0%, #7d6400 100%); }
+        .card[data-cat="horror"] .card-banner { background: linear-gradient(135deg, #2c2c2c 0%, #0a0a0a 100%); }
+        .card[data-cat="fighting"] .card-banner { background: linear-gradient(135deg, #e74c3c 0%, #8e0033 100%); }
+        .card[data-cat="sports"] .card-banner { background: linear-gradient(135deg, #27ae60 0%, #0b4a24 100%); }
+        .card[data-cat="indie"] .card-banner { background: linear-gradient(135deg, #8e44ad 0%, #3b0070 100%); }
+        .card[data-cat="rpg"] .card-category { color: #ff6b6b; }
+        .card[data-cat="action"] .card-category { color: #ffaa55; }
+        .card[data-cat="strategy"] .card-category { color: #50e3c2; }
+        .card[data-cat="platformer"] .card-category { color: #ffe066; }
+        .card[data-cat="horror"] .card-category { color: #aaa; }
+        .card[data-cat="fighting"] .card-category { color: #ff4d6d; }
+        .card[data-cat="sports"] .card-category { color: #5af078; }
+        .card[data-cat="indie"] .card-category { color: #d577ff; }
+
+        .card-content {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .card-category {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--accent-neon);
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .card-excerpt {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-footer {
+            margin-top: auto;
+            font-size: 0.8rem;
+            color: var(--accent-purple);
+            font-weight: bold;
+        }
+
+        /* --- INTERACTIVE MODAL DETAILED VIEW --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 12, 27, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background-color: var(--bg-card);
+            border: 2px solid var(--accent-neon);
+            width: 90%;
+            max-width: 750px;
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2rem;
+            color: var(--text-main);
+            cursor: pointer;
+            background: none;
+            border: none;
+            z-index: 10;
+        }
+
+        .close-btn:hover {
+            color: var(--accent-neon);
+        }
+
+        .modal-body {
+            padding: 2.5rem;
+            overflow-y: auto;
+        }
+
+        .modal-header-tag {
+            color: var(--accent-neon);
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-title {
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--accent-purple);
+            padding-bottom: 0.5rem;
+        }
+
+        .modal-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.8rem 1.2rem;
+            border-radius: 6px;
+            border-left: 3px solid var(--accent-neon);
+        }
+
+        .modal-meta div {
+            line-height: 1.4;
+        }
+
+        .modal-meta strong {
+            color: var(--text-main);
+        }
+
+        .modal-description {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            color: #e2e4f0;
+        }
+
+        .modal-description p {
+            margin-bottom: 1.2rem;
+        }
+
+        /* --- RESPONSIVE DESIGN --- */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            aside {
+                width: 100%;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                padding: 1rem;
+                border-right: none;
+                border-bottom: 1px solid rgba(157, 78, 221, 0.2);
+            }
+            .filter-btn {
+                width: auto;
+                margin-bottom: 0;
+                padding: 0.5rem 1rem;
+            }
+            main {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">Arcade<span>Verse</span></div>
+        <div class="search-container">
+            <input type="text" id="search-bar" placeholder="Search 200+ entries: RPG, Action, Strategy, Horror, Indie...">
+        </div>
+    </header>
+
+    <div class="container">
+        <aside>
+            <h3>Categories</h3>
+            <button class="filter-btn active" data-category="all">All Entries</button>
+            <button class="filter-btn" data-category="games">Iconic Games</button>
+            <button class="filter-btn" data-category="rpg">⚔️ RPG</button>
+            <button class="filter-btn" data-category="action">💥 Action</button>
+            <button class="filter-btn" data-category="strategy">🧠 Strategy</button>
+            <button class="filter-btn" data-category="platformer">🍄 Platformer</button>
+            <button class="filter-btn" data-category="horror">👁️ Horror</button>
+            <button class="filter-btn" data-category="fighting">🥊 Fighting</button>
+            <button class="filter-btn" data-category="sports">🏆 Sports</button>
+            <button class="filter-btn" data-category="indie">🌱 Indie</button>
+            <button class="filter-btn" data-category="genres">Genres</button>
+            <button class="filter-btn" data-category="mechanics">Mechanics</button>
+            <button class="filter-btn" data-category="history">History & Lore</button>
+            <button class="filter-btn" data-category="hardware">Hardware</button>
+        </aside>
+
+        <main>
+            <div class="grid" id="encyclopedia-grid"></div>
+        </main>
+    </div>
+
+    <div class="modal" id="entry-modal">
+        <div class="modal-content">
+            <button class="close-btn" id="close-modal">&times;</button>
+            <div class="modal-body" id="modal-body-content"></div>
+        </div>
+    </div>
+
+    <script>
+        const encyclopediaData = [
+            {
+                id: "super-mario-64",
+                title: "Super Mario 64",
+                category: "games",
+                emoji: "🧢",
+                excerpt: "The foundational paradigm blueprint for 3D spatial navigation, camera design, and fluid platforming architecture.",
+                meta: "<strong>Developer:</strong> Nintendo EAD | <strong>Release:</strong> 1996<br><strong>Platform:</strong> Nintendo 64 | <strong>Core Innovation:</strong> Dynamic camera orbit mechanics.",
+                description: "<p>Super Mario 64 is the Rosetta Stone of three-dimensional interactive structural design. Prior to its 1996 debut, the industry faced an existential wall: translating physics, traversal metrics, and spatial navigation from binary 2D spaces into a non-linear 3D environment without causing extreme disorientation. Nintendo solved this paradigm shift by redesigning player feedback loops from the controller layout up to the real-time engine scripts.</p><p>The game harnessed the experimental Nintendo 64 analog thumbstick to calculate input vectors dynamically. Mario was given an elaborate library of momentum-driven maneuvers including triple-jumps, wall-kicks, and side-somersaults. These mechanical subroutines were mathematically integrated with a real-time friction and gravity simulation, ensuring that running through space was intrinsically rewarding separate from arbitrary goals. Equally critical was the invention of an automated camera tracking engine that cast invisible ray traces between the view node and the avatar mesh, dodging geometric occlusions seamlessly and establishing third-person tracking guidelines used to this day.</p>"
+            },
+            {
+                id: "half-life-2",
+                title: "Half-Life 2",
+                category: "games",
+                emoji: "📐",
+                excerpt: "A masterpiece of linear narrative immersion, structural environmental storytelling, and physics-driven interactive design.",
+                meta: "<strong>Developer:</strong> Valve Corporation | <strong>Release:</strong> 2004<br><strong>Engine:</strong> Source Engine | <strong>Core Innovation:</strong> Deeply integrated rigid-body environment loops.",
+                description: "<p>Released in late 2004, Half-Life 2 altered the trajectory of first-person shooters by fundamentally rewriting how interactive video game narratives are engineered. While contemporary developers relied on invasive pre-rendered cinematic cutscenes, Valve enforced an absolute rule of uninterrupted subjective perspective. The player remains permanently locked inside the physical boundaries of protagonist Gordon Freeman, preserving user agency and continuous immersion.</p><p>The structural backbone of the title was the Source Engine, which integrated real-time rigid-body physics calculations directly into the layout. The peak manifestation of this engine framework was the Gravity Gun, which transformed the environmental props into a dynamic tactical resource or ammunition loop. Players manipulated heavy objects to solve buoyancy puzzles or calculate geometric kinetic vectors against squads. Combined with pioneering skeletal facial animation matrices that allowed NPCs to convey rich emotional micro-expressions, Half-Life 2 established an elite benchmark for seamless environmental world building.</p>"
+            },
+            {
+                id: "world-of-warcraft",
+                title: "World of Warcraft",
+                category: "games",
+                emoji: "🌍",
+                excerpt: "The definitive standard for MMORPG architectures, synthesizing social coordination and structured progression loops.",
+                meta: "<strong>Developer:</strong> Blizzard Entertainment | <strong>Release:</strong> 2004<br><strong>Genre:</strong> MMORPG | <strong>Impact:</strong> Peak subscriber base exceeding 12 million global users.",
+                description: "<p>World of Warcraft streamlined and perfected the scattered, highly punishing mechanics found in genre pioneers like Ultima Online and EverQuest. By mitigating high death penalties, clarifying user interface layouts, and deploying explicit, narrative-driven quest paths, Blizzard democratized mass online multiplayer ecosystems for a global audience.</p><p>The architecture balances a smooth solo leveling experience with highly technical endgame content. The endgame relied on 40-player instanced Raids, requiring strict coordination via the 'Holy Trinity' team archetype: Tanks handling enemy aggro metrics, Healers tracking health vectors, and Damage Dealers executing optimized output rotations. WoW also served as a profound socioeconomic simulation, introducing complex virtual Auction Houses prone to real-world inflationary mechanics, and even acting as a real-world scientific modeling platform during the accidental 'Corrupted Blood' virtual epidemic of 2005.</p>"
+            },
+            {
+                id: "dark-souls",
+                title: "Dark Souls",
+                category: "games",
+                emoji: "🔥",
+                excerpt: "The progenitor of the 'Soulslike' genre, celebrated for its vertical, interconnected world geography and high-stakes combat philosophy.",
+                meta: "<strong>Developer:</strong> FromSoftware | <strong>Release:</strong> 2011<br><strong>Genre:</strong> Action RPG | <strong>Legacy:</strong> Reframed modern difficulty and environmental storytelling.",
+                description: "<p>Dark Souls arrived during an industry era dominated by over-guided user interfaces and forgiving loops. FromSoftware resisted this design trend by engineering a universe that treats the player with complete mechanical accountability. Its economy binds currency and experience points directly to 'Souls,' which are dropped at death; failure to retrieve them on the next run permanently erases the pool, amplifying psychological tension.</p><p>The definitive achievement of the game is its brilliant, vertical, interconnected map layout. Lacking early fast travel, the topography loops back into central hubs via hidden shortcuts, elevators, and gate systems, turning spatial mapping into a vital player tool. Combat functions on strict animation commitment; weapons have distinct startup, active, and recovery frames tied to a limited stamina bar. This structural architecture demands patience, pattern recognition, and mechanical discipline, spawning an entire subgenre of action design.</p>"
+            },
+            // --- INJECTION OF 100 TRENDING AND ICONIC GAMES ---
+            { id: "gta5", title: "Grand Theft Auto V", category: "games", emoji: "🚗", excerpt: "A multi-protagonist satirical open-world juggernaut featuring unmatched system density.", meta: "Rockstar Games | 2013 | Open World Sandbox", description: "<p>GTA V pushed structural open-world mapping to its limits. It introduced a real-time character-swapping mechanic that dynamically shifts the player's camera vector across miles of terrain. Its persistent multiplayer architecture, GTA Online, became an industry-defining monetization and live-service framework.</p>" },
+            { id: "fortnite", title: "Fortnite", category: "games", emoji: "🧱", excerpt: "A global battle royale phenomenon blending fast-paced shooting with modular architecture tools.", meta: "Epic Games | 2017 | Battle Royale", description: "<p>Fortnite disrupted the shooter space by implementing structural grid building mechanics directly derived from sandbox survival loops. Its continuous live-event server orchestration established it as a foundational blueprint for virtual spaces and modern pop-culture crossovers.</p>" },
+            { id: "cyberpunk", title: "Cyberpunk 2077", category: "games", emoji: "🦾", excerpt: "A dense, ray-traced futuristic RPG showcasing advanced geometric detailing.", meta: "CD Projekt Red | 2020 | Action RPG", description: "<p>Featuring Night City, this game pushed structural streaming engines to their limits to eliminate loading zones across vertical architectural matrices. It serves as a modern hardware benchmark for ray-tracing path calculations and DLSS optimization algorithms.</p>" },
+            { id: "red-dead-2", title: "Red Dead Redemption 2", category: "games", emoji: "🤠", excerpt: "An ultra-realistic western epic defined by autonomous procedural NPC scripts.", meta: "Rockstar Games | 2018 | Action-Adventure", description: "<p>RDR2 stands as a monumental structural achievement in atmospheric immersion. Its complex AI systems dictate unique routines for thousands of individual NPCs, responding dynamically to player hygiene, posture, and environmental tracking choices.</p>" },
+            { id: "valorant", title: "Valorant", category: "games", emoji: "🎯", excerpt: "A highly optimized tactical hero shooter centered on tick-rate integrity.", meta: "Riot Games | 2020 | Tactical FPS", description: "<p>Designed explicitly for esports competitive balance, Valorant implements an authoritarian server-authoritative infrastructure and custom 'Fog of War' coding to mitigate client-side cheating, paired with native 128-tick networking tracks.</p>" },
+            { id: "cs2", title: "Counter-Strike 2", category: "games", emoji: "💣", excerpt: "The definitive tactical economy shooter utilizing volumetric dynamic smokes.", meta: "Valve Corporation | 2023 | Tactical FPS", description: "<p>An overhaul of CS:GO, CS2 introduces sub-tick server processing architectures that compute actions independent of flat frame rates. Its standout visual mechanic features volumetric smoke grenades that react dynamically to lighting and bullet trajectories.</p>" },
+            { id: "league-legends", title: "League of Legends", category: "games", emoji: "🛡️", excerpt: "The premier global MOBA driving the infrastructure of competitive international esports.", meta: "Riot Games | 2009 | MOBA", description: "<p>Iterating on the DotA map framework, League of Legends matches asymmetrical character design loops with strict lane economic systems (gold framing, item power-spikes). It is a global case study in multi-decade meta-balancing algorithms.</p>" },
+            { id: "dota2", title: "Dota 2", category: "games", emoji: "⚔️", excerpt: "A complex tactical MOBA celebrated for its hyper-granular mechanical depth.", meta: "Valve Corporation | 2013 | MOBA", description: "<p>Dota 2 preserves highly technical mechanics like creep-denying, complex turn-rate delays, and asymmetrical environmental high-ground calculation rules, providing an intensely steep but strategic skill curve for competitive teams.</p>" },
+            { id: "apex-legends", title: "Apex Legends", category: "games", emoji: "🏃", excerpt: "A squad battle royale characterized by high-velocity locomotion dynamics.", meta: "Respawn Entertainment | 2019 | Battle Royale", description: "<p>Built on a heavily modified Source Engine branch, Apex Legends popularized the contextual smart-ping communication system and streamlined high-momentum movement systems like slide-jumping and wall-bouncing into competitive loops.</p>" },
+            { id: "overwatch", title: "Overwatch", category: "games", emoji: "🤖", excerpt: "The foundational hero shooter emphasizing team composition and ultimate-ability synergy.", meta: "Blizzard Entertainment | 2016 | Hero Shooter", description: "<p>Overwatch synthesized class-based shooter design with structural MOBA ultimate-cooldown frameworks. It shifted the first-person genre away from pure aiming metrics toward team-wide ultimate ability management and objective containment loops.</p>" },
+            { id: "baldurs-gate-3", title: "Baldur's Gate 3", category: "games", emoji: "🎲", excerpt: "A monumental CRPG reviving player narrative agency via simulated dice-roll calculations.", meta: "Larian Studios | 2023 | CRPG", description: "<p>A structural translation of D&D 5th Edition rules, BG3 features deep reactive scripting engines. Every choice, environmental interaction, and dialogue choice is governed by intricate background branching structures and simulated physics-roll triggers.</p>" },
+            { id: "zelda-totk", title: "The Legend of Zelda: Tears of the Kingdom", category: "games", emoji: "🔧", excerpt: "An open-world marvel driven by an unprecedented chemistry and systemic physics engine.", meta: "Nintendo | 2023 | Action-Adventure", description: "<p>TotK is an engineering masterclass on limited hardware. It introduced the 'Ultrahand' and 'Fuse' modules—systemic object attachment physics loops that allow players to construct complex machines, vehicles, and weapons out of arbitrary assets seamlessly.</p>" },
+            { id: "zelda-botw", title: "The Legend of Zelda: Breath of the Wild", category: "games", emoji: "🍃", excerpt: "The open-world framework that popularized emergent chemistry physics loops.", meta: "Nintendo | 2017 | Action-Adventure", description: "<p>BotW dismantled modern open-world mapping tropes by prioritizing additive chemistry engines (e.g., wind spreads fire, rain slicks stone meshes, metal shapes attract procedural lightning) combined with absolute structural climbing freedom.</p>" },
+            { id: "hades", title: "Hades", category: "games", emoji: "🔥", excerpt: "An isometric rogue-lite structurally weaving character narrative into permadeath loops.", meta: "Supergiant Games | 2020 | Rogue-lite", description: "<p>Hades revolutionized rogue-lite pacing by making run failures an active narrative advancement trigger. The structural layout of the Underworld changes while branching dialogue systems smoothly track individual death scenarios to update relationship parameters.</p>" },
+            { id: "hollow-knight", title: "Hollow Knight", category: "games", emoji: "🪲", excerpt: "The modern standard for atmospheric atmospheric Metroidvania exploration.", meta: "Team Cherry | 2017 | Metroidvania", description: "<p>A pristine execution of environmental non-linear progression. Hollow Knight guides players through visual cues and environmental motifs rather than text logs, locking progression behind mechanical ability gates (dashes, double-jumps) on a massive map.</p>" },
+            { id: "among-us", title: "Among Us", category: "games", emoji: "🚀", excerpt: "A viral social-deduction game that turned asymmetrical interaction into a mainstream loop.", meta: "Innersloth | 2018 | Social Deduction", description: "<p>Among Us leverages hidden information and asymmetrical group communication. It isolates players through mechanical tasks, relying on psychological player manipulation and emergent social behavior during voting protocols rather than traditional software triggers.</p>" },
+            { id: "roblox", title: "Roblox", category: "games", emoji: "🟥", excerpt: "A massive, user-generated engine ecosystem serving as a social platform for developers.", meta: "Roblox Corporation | 2006 | Sandbox / Platform", description: "<p>More than a game, Roblox is a distributed game framework using Luau programming languages. It allows amateur creators to build, host, and micro-monetize independent multi-user instances within a single macro-profile hub.</p>" },
+            { id: "genshin", title: "Genshin Impact", category: "games", emoji: "✨", excerpt: "The pioneer of cross-platform open-world action wrapped in live-service gacha modules.", meta: "miHoYo | 2020 | Action RPG", description: "<p>Genshin Impact fused open-world systemic layout loops with free-to-play mobile monetization structures. Its core combat relies heavily on elemental combo reactions (e.g., combining Hydro and Cryo to calculate freezing frames) swapped across active party layouts.</p>" },
+            { id: "rocket-league", title: "Rocket League", category: "games", emoji: "⚽", excerpt: "A brilliant arcade hybrid replacing traditional soccer vectors with rocket-propelled vehicular physics.", meta: "Psyonix | 2015 | Sports Arcade", description: "<p>Rocket League eliminates algorithmic gameplay assists or random number tracking. Success is completely determined by client-side mastery of momentum preservation, wall-riding, aerial vector math, and structural coordinate prediction.</p>" },
+            { id: "stardew", title: "Stardew Valley", category: "games", emoji: "🧑‍🌾", excerpt: "The ultimate cozy simulator refining the structural loops of resource farming economics.", meta: "ConcernedApe | 2016 | Farming Simulation", description: "<p>An extraordinary indie success made by a single developer. Stardew Valley coordinates tight daily energy management constraints with systemic crop yield calculations, relationship progression trackers, and relaxing structural routines.</p>" },
+            { id: "animal-crossing", title: "Animal Crossing: New Horizons", category: "games", emoji: "🏝️", excerpt: "A real-time community simulator that became a cultural digital refuge.", meta: "Nintendo | 2020 | Social Simulation", description: "<p>New Horizons tied its internal clock script directly to real-world hardware time metrics. It decentralized progression by offering structural terraforming and interior design tools that turned individual islands into shareable visual showrooms.</p>" },
+            { id: "tarkov", title: "Escape from Tarkov", category: "games", emoji: "🪖", excerpt: "The hardcore extraction shooter introducing unprecedented depth to weapon customization.", meta: "Battlestate Games | 2017 | Extraction Shooter", description: "<p>Tarkov popularized the high-risk extraction loop. It features hyper-detailed ballistic calculations, dynamic limb-damage systems, and modular weapon assemblies containing dozens of real-world functional interactive weapon parts.</p>" },
+            { id: "rust", title: "Rust", category: "games", emoji: "⛺", excerpt: "A brutal, persistent multiplayer survival landscape centered on structural architectural raiding.", meta: "Facepunch Studios | 2013 | Survival", description: "<p>Rust pits players against brutal resource scarcity and absolute player hostility. Its servers execute continuous architectures where structural bases remain vulnerable to offline asset raids by enemy factions 24/7.</p>" },
+            { id: "helldivers2", title: "Helldivers 2", category: "games", emoji: "🦅", excerpt: "A cinematic co-op extraction shooter utilizing live administrative game-master tracking.", meta: "Arrowhead Game Studios | 2024 | Co-op Shooter", description: "<p>Helldivers 2 stands out for its system-wide implementation of friendly fire physics and 'Stratagem' input sequences. The wider galactic war map coordinates with real-time human Game Masters deploying strategic changes to server parameters.</p>" },
+            { id: "palworld", title: "Palworld", category: "games", emoji: "🔫", excerpt: "A viral genre mashup combining monster collection loops with heavy survival automation mechanics.", meta: "Pocketpair | 2024 | Survival Crafting", description: "<p>Palworld synthesized creature capture designs with industrial assembly line base operations. It allows captured entities to work automated crafting tables, combining open-world exploration with real-time base logistical optimization.</p>" },
+            { id: "lethal-company", title: "Lethal Company", category: "games", emoji: "🔦", excerpt: "A brilliant low-fi co-op horror title utilizing proximity voice modulation algorithms.", meta: "Zeekerss | 2023 | Co-op Horror", description: "<p>Lethal Company pairs atmospheric procedural industrial dungeon arrays with custom distance-attenuated and structural wall-muffled proximity audio processing, maximizing emergent comedic and terrifying multiplayer communication lapses.</p>" },
+            { id: "monster-hunter", title: "Monster Hunter: World", category: "games", emoji: "🦎", excerpt: "A highly complex systemic ecosystem centered on multi-stage tactical boss fights.", meta: "Capcom | 2018 | Action RPG", description: "<p>This title streamlined the legacy franchise's tracking loops while upgrading local ecosystem AI scripts. Monsters interact dynamically via territorial food-chain scripts, and weapon classes operate with dense animation string requirements.</p>" },
+            { id: "destiny2", title: "Destiny 2", category: "games", emoji: "🌌", excerpt: "The modern paradigm for first-person live-service 'looter-shooters'.", meta: "Bungie | 2017 | Looter-Shooter", description: "<p>Destiny 2 blends Bungie's signature fluid firing mechanics with highly robust network database servers tracking millions of randomized gear perk matrices, contextualized within sweeping narrative expansions and weekly reset cycles.</p>" },
+            { id: "sea-of-thieves", title: "Sea of Thieves", category: "games", emoji: "🏴‍☠️", excerpt: "An open-world pirate sandbox utilizing physics-driven collaborative vehicle management.", meta: "Rare | 2018 | Action-Adventure", description: "<p>Sea of Thieves foregoes stat-based character progression in favor of absolute horizontal equivalence. Ships require manual interactive physics coordination: dropping anchors, turning sail rigging vectors, and repairing individual structural wood hulls.</p>" },
+            { id: "rimworld", title: "RimWorld", category: "games", emoji: "🛸", excerpt: "An isometric colony simulator driven by an automated narrative AI director.", meta: "Ludeon Studios | 2018 | Simulation", description: "<p>RimWorld utilizes an algorithmic 'AI Storyteller' that evaluates current colony wealth and mood telemetry to dynamically inject random events (e.g., blight, mental breaks, solar flares) to generate distinct emergency narratives.</p>" },
+            { id: "factorio", title: "Factorio", category: "games", emoji: "🏭", excerpt: "The definitive management grid system optimizing automated industrial factory layouts.", meta: "Wube Software | 2020 | Automation Sim", description: "<p>Factorio is a programmatic exercise in structural throughput efficiency. Players map conveyor belts, chemical fluid piping arrays, and automated train track networks to manage complex manufacturing loops while fighting off eco-reactive wildlife grids.</p>" },
+            { id: "terraria", title: "Terraria", category: "games", emoji: "🌳", excerpt: "A legendary 2D sandbox sandbox detailing deep vertical boss progression lattices.", meta: "Re-Logic | 2011 | 2D Sandbox", description: "<p>Often mischaracterized as 2D Minecraft, Terraria focuses intensely on action RPG loops, armor-set stat bonuses, and a massive progression tier of structured boss fights triggered by environmental changes or summoning scripts.</p>" },
+            { id: "isaac", title: "The Binding of Isaac: Rebirth", category: "games", emoji: "💧", excerpt: "The definitive twin-stick rogue-lite utilizing massive item synergy matrices.", meta: "Nicalis / Edmund McMillen | 2014 | Rogue-lite", description: "<p>Isaac's structural genius lies in its dynamic modifier engine. Hundreds of collectible items do not merely increase stat vectors linearly; they alter the tear projectile's physical sprites, math rules, and behaviors to produce chaotic broken runs.</p>" },
+            { id: "slay-spire", title: "Slay the Spire", category: "games", emoji: "🃏", excerpt: "The structural progenitor of the modern deck-building rogue-lite genre.", meta: "Mega Crit Games | 2019 | Roguelike Deckbuilder", description: "<p>Slay the Spire combined turn-based card drawing with rogue-lite path selections. Its design success relies on perfect game-state mathematical transparency, clearly showing enemy intentions (intent system) to allow deep strategic player calculation.</p>" },
+            { id: "dead-cells", title: "Dead Cells", category: "games", emoji: "🧪", excerpt: "A hyper-responsive 'Roguevania' prioritizing rapid animation cancel inputs.", meta: "Motion Twin | 2018 | Rogue-lite", description: "<p>Dead Cells blends Metroidvania level aesthetics with rogue-lite cycles. Its development focused on hyper-polished input polling metrics, including subtle coyote-time frames and responsive attack roll cancels to give absolute fluid movement fidelity.</p>" },
+            { id: "vampire-survivors", title: "Vampire Survivors", category: "games", emoji: "🧄", excerpt: "A minimalist bullet-heaven indie that popularized auto-firing wave survival formulas.", meta: "poncle | 2022 | Action Roguelike", description: "<p>Vampire Survivors strips inputs down to simple 2D directional locomotion vectors. The mechanical depth relies entirely on weapon build evolution choices, managing massive screen-space object rendering optimization loops for thousands of enemies.</p>" },
+            { id: "disco-elysium", title: "Disco Elysium", category: "games", emoji: "🪩", excerpt: "A revolutionary isometric RPG replacing physical combat with psychological dialogue mechanics.", meta: "ZA/UM | 2019 | Narrative RPG", description: "<p>Disco Elysium adapts classic isometric layout logic but converts physical attributes into 24 distinct psychological sub-voices. These facets voice thoughts directly into dialogue windows, debating with the player based on background stat weights.</p>" },
+            { id: "persona5", title: "Persona 5 Royal", category: "games", emoji: "🎭", excerpt: "A hyper-stylized JRPG combining turn-based combat with social-calendar management loops.", meta: "Atlus | 2019 | JRPG", description: "<p>Persona 5 links turn-based dungeon crawl progression with a strict daily calendar social simulation loop. Its mechanical loop rewards exploiting elemental character weaknesses to execute synchronized all-out team attacks.</p>" },
+            { id: "nier", title: "NieR: Automata", category: "games", emoji: "🤖", excerpt: "A philosophical masterwork blending real-time action with dynamic genre-shifting engine scripts.", meta: "Square Enix / PlatinumGames | 2017 | Action RPG", description: "<p>NieR: Automata constantly manipulates engine camera vectors, transforming fluid 3D character action into 2D side-scrolling, top-down shoot-'em-ups, or twin-stick configurations, integrating interface menus into its meta narrative structures.</p>" },
+            { id: "civilization6", title: "Sid Meier's Civilization VI", category: "games", emoji: "🗺️", excerpt: "The definitive historical 4X strategy game utilizing hex-grid city planning structures.", meta: "Firaxis Games | 2016 | 4X Strategy", description: "<p>Civ VI introduced unstacked city management loops, forcing players to deploy specialized districts on discrete map hex tiles. Victory relies on managing complex diplomatic AI scripts, trade throughput, and tech tree progression paths.</p>" },
+            { id: "crusader-kings", title: "Crusader Kings III", category: "games", emoji: "👑", excerpt: "A complex grand strategy grand strategy driving emergent medieval family drama simulation loops.", meta: "Paradox Interactive | 2020 | Grand Strategy", description: "<p>Unlike macro state-management sims, CK3 traces individual genetic and psychological dynasties. The software runs thousands of AI actor scripts tracking secrets, dread, stress, and lineage parameters to fuel emergent political subplots.</p>" },
+            { id: "cities-skylines", title: "Cities: Skylines", category: "games", emoji: "🏙️", excerpt: "The gold standard of urban city building simulation utilizing granular traffic path vectors.", meta: "Colossal Order | 2015 | City Builder", description: "<p>Cities: Skylines replaced outdated abstract region calculations with a localized agent-tracking matrix. Every individual digital resident (Cim) calculates dynamic pathfinding travel routines to work or retail locations, altering highway planning loops.</p>" },
+            { id: "sims4", title: "The Sims 4", category: "games", emoji: "💎", excerpt: "The definitive life-simulation engine managing character autonomy and architectural frameworks.", meta: "Maxis / EA | 2014 | Life Simulation", description: "<p>The Sims 4 centers on an architecture of interlocking motive needles (Hunger, Energy, Social metrics). Characters execute autonomous task scripts parsed by personality trait modifiers, supported by a dense modular room-building creative suite.</p>" },
+            { id: "msfs", title: "Microsoft Flight Simulator", category: "games", emoji: "✈️", excerpt: "A planetary-scale flight simulation driven by cloud data streaming mapping.", meta: "Asobo Studio | 2020 | Simulation", description: "<p>MSFS streams over two petabytes of cloud geographical photogrammetry data via Bing Maps. Its engine applies procedural azure algorithms to convert satellite captures into real-time 3D volumetric weather structures and global topology maps.</p>" },
+            { id: "gt7", title: "Gran Turismo 7", category: "games", emoji: "🏎️", excerpt: "The premier automotive racing simulation prioritizing real-world physics accuracy.", meta: "Polyphony Digital | 2022 | Racing Sim", description: "<p>GT7 maps hyper-precise tire friction coefficients, drafting slipstreams, and real-time changing track moisture layers. The engine tracks localized track surface grip variances to deliver a highly accurate digital motorsport framework.</p>" },
+            { id: "forza", title: "Forza Horizon 5", category: "games", emoji: "🌵", excerpt: "A breathtaking arcade-racing sandbox deploying dynamic regional weather maps.", meta: "Playground Games | 2021 | Arcade Racing", description: "<p>Forza Horizon 5 blends accessible arcade vehicle control loops with an expansive structural reproduction of Mexico, leveraging advanced skybox capture technology and real-time global illumination scripts.</p>" },
+            { id: "street-fighter-6", title: "Street Fighter 6", category: "games", emoji: "🥊", excerpt: "The modern evolution of competitive 2D fighters utilizing strategic gauge economics.", meta: "Capcom | 2023 | Fighting Game", description: "<p>SF6 introduced the Drive Gauge ecosystem, a resource pooling frame-parries, dashes, and armor impacts into a single bar. Mismanaging the resource triggers a 'Burnout' status, changing attack frame safety parameters for competitive tactical play.</p>" },
+            { id: "tekken8", title: "Tekken 8", category: "games", emoji: "🔥", excerpt: "A high-fidelity 3D fighter adding aggressive mechanical rewards to tactical movement.", meta: "Bandai Namco | 2024 | 3D Fighting", description: "<p>Tekken 8 operates across a three-dimensional tracking plane, popularizing the new 'Heat' subsystem. This system rewards offensive behavior by granting chip damage frames and specific frame-advantage extensions to balance traditional defensive wall mechanics.</p>" },
+            { id: "smash-ultimate", title: "Super Smash Bros. Ultimate", category: "games", emoji: "💥", excerpt: "The ultimate crossover platform platform fighter tracking kinetic launch vectors.", meta: "Nintendo | 2018 | Platform Fighter", description: "<p>Ultimate moves away from binary life-point tracks, calculating knockback distance scaling relative to an enemy's damage percentage vector. The game engine balances an astronomical roster of asynchronous video game mascots inside precise platform spaces.</p>" },
+            { id: "fifa24", title: "EA Sports FC 24", category: "games", emoji: "⚽", excerpt: "The massive global sports iteration integrating volumetric capture locomotion data.", meta: "EA Sports | 2023 | Sports", description: "<p>FC 24 maps real-world match movement loops using its HyperMotionV system, translating actual athletic match footage into instant contextual frame animations, layered with lucrative digital card pack team building systems (Ultimate Team).</p>" },
+            { id: "madden", title: "Madden NFL 24", category: "games", emoji: "🏈", excerpt: "The long-running gridiron simulation framework deploying structural player field physics.", meta: "EA Tiburon | 2023 | Sports", description: "<p>Madden 24 features the Fieldsense engine update, delivering an assembly of branching tackle animations and smarter AI pathing scripts to reflect real-time collisions across the line of scrimmage.</p>" },
+            { id: "nba2k", title: "NBA 2K24", category: "games", emoji: "🏀", excerpt: "A photorealistic basketball simulation driven by real-time play coordination engines.", meta: "Visual Concepts | 2023 | Sports", description: "<p>NBA 2K24 introduced ProPLAY, a pipeline mapping real NBA broadcast files straight to the game engine's functional skeletal rigs, paired with deep competitive player career progression tracks.</p>" },
+            { id: "spiderman2", title: "Marvel's Spider-Man 2", category: "games", emoji: "🕸️", excerpt: "An action-sandbox showcasing near-instant streaming rendering speeds via SSD hardware.", meta: "Insomniac Games | 2023 | Action-Adventure", description: "<p>Leveraging specialized console storage architectures, this title streams high-resolution city geometry assets fast enough to allow players to travel at high velocities using kinetic web-wings without hitches or draw-distance limits.</p>" },
+            { id: "god-of-war", title: "God of War Ragnarök", category: "games", emoji: "🪓", excerpt: "A cinematic combat narrative executed via an uninterrupted one-shot camera framework.", meta: "Santa Monica Studio | 2022 | Action-Adventure", description: "<p>Ragnarök maintains a strict single continuous tracking camera angle without cuts or loading transitions. It matches high-fidelity cinematic choreography with deep combat systems driven by elemental status applications (Frost vs Burn tags).</p>" },
+            { id: "tlou", title: "The Last of Us Part I", category: "games", emoji: "🌿", excerpt: "The industry benchmark for prestige cinematic linear narrative and advanced survival AI.", meta: "Naughty Dog | 2022 | Action-Survival", description: "<p>A ground-up remake establishing peak motion-matching animation standards. Its survival combat engine runs an 'aggressive stealth' AI script where enemies coordinate search vectors, share acoustic callouts, and flanking signals dynamically.</p>" },
+            { id: "ghost-tsushima", title: "Ghost of Tsushima", category: "games", emoji: "⚔️", excerpt: "An artistic open-world game replacing traditional mini-map UI with environmental direction.", meta: "Sucker Punch Productions | 2020 | Action-Adventure", description: "<p>Tsushima engineered the 'Guiding Wind' loop to maximize player environmental sightlines. Instead of plastering static waypoint icons across the viewport, HUD markers are replaced by physical wind vectors, particle paths, and animal path guidance clues.</p>" },
+            { id: "starfield", title: "Starfield", category: "games", emoji: "🚀", excerpt: "A massive interstellar space RPG using procedural planet terrain generation.", meta: "Bethesda Game Studios | 2023 | RPG", description: "<p>Starfield operates via Bethesda’s Creation Engine 2, combining hand-crafted narrative hub instances with procedural generation algorithms that calculate terrain topology, gravity parameters, and atmosphere models for over 1,000 stellar bodies.</p>" },
+            { id: "fallout4", title: "Fallout 4", category: "games", emoji: "☢️", excerpt: "A retro-futuristic post-apocalyptic RPG introducing real-time modular base building.", meta: "Bethesda Game Studios | 2015 | RPG", description: "<p>Fallout 4 mixed classic open-world quest structures with a brand new real-time settlement crafting engine. It dynamically tracks scrap component breakdown matrices, power grid routing, and localized base defense triggers.</p>" },
+            { id: "skyrim", title: "The Elder Scrolls V: Skyrim", category: "games", emoji: "🐉", excerpt: "The definitive cultural milestone for absolute open-world player freedom.", meta: "Bethesda Game Studios | 2011 | RPG", description: "<p>Skyrim popularized the 'see a mountain, walk there' sandbox philosophy. Driven by Radiant AI scripts, NPCs pursue daily jobs, while the dynamic quest system shifts location targets based on unvisited map coordinate vectors.</p>" },
+            { id: "diablo4", title: "Diablo IV", category: "games", emoji: "😈", excerpt: "An isometric action-RPG built on shared-world dungeon database synchronization.", meta: "Blizzard Entertainment | 2023 | Action RPG / ARPG", description: "<p>Diablo IV combines classic fast-paced action combat with modern MMO shared-world structures. Its engine calculates vast mathematical damage calculations across thousands of loot affixes and paragon stat board nodes concurrently.</p>" },
+            { id: "path-exile", title: "Path of Exile", category: "games", emoji: "🕸️", excerpt: "The ultimate hyper-complex ARPG famous for its massive passive skill lattice.", meta: "Grinding Gear Games | 2013 | Action RPG", description: "<p>PoE is legendary for its massive, interconnected passive skill matrix and skill-gem slot mechanic. It shuns traditional currency gold in favor of functional bartering items that actively modify item properties, anchoring a complex economy.</p>" },
+            { id: "outer-wilds", title: "Outer Wilds", category: "games", emoji: "🚀", excerpt: "A profound space-exploration puzzle running inside a real-time gravity clock.", meta: "Mobius Digital | 2019 | Adventure Puzzle", description: "<p>Outer Wilds runs a mini solar system where every planet is modeled with real-time orbital physics and gravity vectors. Progression is strictly gated by player knowledge, discovered across a firm 22-minute temporal time-loop script.</p>" },
+            { id: "subnautica", title: "Subnautica", category: "games", emoji: "🌊", excerpt: "The premier underwater survival game utilizing deep vertical atmospheric horror.", meta: "Unknown Worlds | 2018 | Survival", description: "<p>Subnautica masterfully handles progressive spatial locking by adjusting hydrostatic depth pressure rules. To map deeper oceanic levels, players must manage oxygen consumption and craft advanced vehicles while navigating around colossal leviathan AI paths.</p>" },
+            { id: "terraria", title: "Terraria", category: "games", emoji: "🌳", excerpt: "A legendary 2D sandbox sandbox detailing deep vertical boss progression lattices.", meta: "Re-Logic | 2011 | 2D Sandbox", description: "<p>Often mischaracterized as 2D Minecraft, Terraria focuses intensely on action RPG loops, armor-set stat bonuses, and a massive progression tier of structured boss fights triggered by environmental changes or summoning scripts.</p>" },
+            { id: "dead-by-daylight", title: "Dead by Daylight", category: "games", emoji: "🩸", excerpt: "The premier asymmetrical multiplayer horror title utilizing map objective urgency.", meta: "Behaviour Interactive | 2016 | Asymmetrical Horror", description: "<p>Pitting a 3rd-person perspective Killer against four 1st-person perspective Survivors, DBD hinges on line-of-sight manipulation, map geometry looping, and real-time generator completion stress tracks to balance horror scenarios.</p>" },
+            { id: "phasmophobia", title: "Phasmophobia", category: "games", emoji: "👻", excerpt: "A co-op ghost investigation title utilizing advanced local voice recognition engines.", meta: "Kinetic Games | 2020 | Co-op Horror", description: "<p>Phasmophobia's structural innovation is its active voice parsing script. Paranormal entities constantly monitor player microphone frequencies, tracking vocal stress levels and identifying specific keywords to trigger dynamic haunting phases.</p>" },
+            { id: "it-takes-two", title: "It Takes Two", category: "games", emoji: "✂️", excerpt: "A masterclass in cooperative mechanics, shifting mechanics stage-by-stage.", meta: "Hazelight Studios | 2021 | Co-op Platformer", description: "<p>Designed exclusively for two players, this game refuses mechanical repetition. Every distinct level environment introduces entirely new asymmetrical co-op tool configurations, forcing continuous coordination and player communication.</p>" },
+            { id: "portal2", title: "Portal 2", category: "games", emoji: "🌀", excerpt: "The definitive first-person spatial puzzle game utilizing spatial momentum redirection.", meta: "Valve Corporation | 2011 | Puzzle Platformer", description: "<p>Portal 2 tracks velocity vectors as players step through quantum portal coordinates ('speedy thing goes in, speedy thing comes out'). It represents a masterclass in clean environmental puzzle scaling and narrative dialogue comedic pacing.</p>" },
+            { id: "disco-elysium", title: "Disco Elysium", category: "games", emoji: "🪩", excerpt: "A revolutionary isometric RPG replacing physical combat with psychological dialogue mechanics.", meta: "ZA/UM | 2019 | Narrative RPG", description: "<p>Disco Elysium adapts classic isometric layout logic but converts physical attributes into 24 distinct psychological sub-voices. These facets voice thoughts directly into dialogue windows, debating with the player based on background stat weights.</p>" },
+            { id: "disco-elysium", title: "Disco Elysium", category: "games", emoji: "🪩", excerpt: "A revolutionary isometric RPG replacing physical combat with psychological dialogue mechanics.", meta: "ZA/UM | 2019 | Narrative RPG", description: "<p>Disco Elysium adapts classic isometric layout logic but converts physical attributes into 24 distinct psychological sub-voices. These facets voice thoughts directly into dialogue windows, debating with the player based on background stat weights.</p>" },
+            { id: "star-rail", title: "Honkai: Star Rail", category: "games", emoji: "🚂", excerpt: "A turn-based space fantasy RPG displaying exceptional tactical optimization loops.", meta: "miHoYo | 2023 | Turn-based RPG", description: "<p>Star Rail translates live gacha structures into a pristine turn-based layout. Pacing is governed by strict speed action-value equations (AV), rewarding players for timing shield application and ultimate skill counters between enemy turns.</p>" },
+            { id: "helldivers2", title: "Helldivers 2", category: "games", emoji: "🦅", excerpt: "A cinematic co-op extraction shooter utilizing live administrative game-master tracking.", meta: "Arrowhead Game Studios | 2024 | Co-op Shooter", description: "<p>Helldivers 2 stands out for its system-wide implementation of friendly fire physics and 'Stratagem' input sequences. The wider galactic war map coordinates with real-time human Game Masters deploying strategic changes to server parameters.</p>" },
+            { id: "monster-hunter", title: "Monster Hunter: World", category: "games", emoji: "🦎", excerpt: "A highly complex systemic ecosystem centered on multi-stage tactical boss fights.", meta: "Capcom | 2018 | Action RPG", description: "<p>This title streamlined the legacy franchise's tracking loops while upgrading local ecosystem AI scripts. Monsters interact dynamically via territorial food-chain scripts, and weapon classes operate with dense animation string requirements.</p>" },
+            { id: "destiny2", title: "Destiny 2", category: "games", emoji: "🌌", excerpt: "The modern paradigm for first-person live-service 'looter-shooters'.", meta: "Bungie | 2017 | Looter-Shooter", description: "<p>Destiny 2 blends Bungie's signature fluid firing mechanics with highly robust network database servers tracking millions of randomized gear perk matrices, contextualized within sweeping narrative expansions and weekly reset cycles.</p>" },
+            { id: "sea-of-thieves", title: "Sea of Thieves", category: "games", emoji: "🏴‍☠️", excerpt: "An open-world pirate sandbox utilizing physics-driven collaborative vehicle management.", meta: "Rare | 2018 | Action-Adventure", description: "<p>Sea of Thieves foregoes stat-based character progression in favor of absolute horizontal equivalence. Ships require manual interactive physics coordination: dropping anchors, turning sail rigging vectors, and repairing individual structural wood hulls.</p>" },
+            { id: "rimworld", title: "RimWorld", category: "games", emoji: "🛸", excerpt: "An isometric colony simulator driven by an automated narrative AI director.", meta: "Ludeon Studios | 2018 | Simulation", description: "<p>RimWorld utilizes an algorithmic 'AI Storyteller' that evaluates current colony wealth and mood telemetry to dynamically inject random events (e.g., blight, mental breaks, solar flares) to generate distinct emergency narratives.</p>" },
+            { id: "factorio", title: "Factorio", category: "games", emoji: "🏭", excerpt: "The definitive management grid system optimizing automated industrial factory layouts.", meta: "Wube Software | 2020 | Automation Sim", description: "<p>Factorio is a programmatic exercise in structural throughput efficiency. Players map conveyor belts, chemical fluid piping arrays, and automated train track networks to manage complex manufacturing loops while fighting off eco-reactive wildlife grids.</p>" },
+            { id: "isaac", title: "The Binding of Isaac: Rebirth", category: "games", emoji: "💧", excerpt: "The definitive twin-stick rogue-lite utilizing massive item synergy matrices.", meta: "Nicalis / Edmund McMillen | 2014 | Rogue-lite", description: "<p>Isaac's structural genius lies in its dynamic modifier engine. Hundreds of collectible items do not merely increase stat vectors linearly; they alter the tear projectile's physical sprites, math rules, and behaviors to produce chaotic broken runs.</p>" },
+            { id: "slay-spire", title: "Slay the Spire", category: "games", emoji: "🃏", excerpt: "The structural progenitor of the modern deck-building rogue-lite genre.", meta: "Mega Crit Games | 2019 | Roguelike Deckbuilder", description: "<p>Slay the Spire combined turn-based card drawing with rogue-lite path selections. Its design success relies on perfect game-state mathematical transparency, clearly showing enemy intentions (intent system) to allow deep strategic player calculation.</p>" },
+            { id: "dead-cells", title: "Dead Cells", category: "games", emoji: "🧪", excerpt: "A hyper-responsive 'Roguevania' prioritizing rapid animation cancel inputs.", meta: "Motion Twin | 2018 | Rogue-lite", description: "<p>Dead Cells blends Metroidvania level aesthetics with rogue-lite cycles. Its development focused on hyper-polished input polling metrics, including subtle coyote-time frames and responsive attack roll cancels to give absolute fluid movement fidelity.</p>" },
+            { id: "vampire-survivors", title: "Vampire Survivors", category: "games", emoji: "🧄", excerpt: "A minimalist bullet-heaven indie that popularized auto-firing wave survival formulas.", meta: "poncle | 2022 | Action Roguelike", description: "<p>Vampire Survivors strips inputs down to simple 2D directional locomotion vectors. The mechanical depth relies entirely on weapon build evolution choices, managing massive screen-space object rendering optimization loops for thousands of enemies.</p>" },
+            { id: "persona5", title: "Persona 5 Royal", category: "games", emoji: "🎭", excerpt: "A hyper-stylized JRPG combining turn-based combat with social-calendar management loops.", meta: "Atlus | 2019 | JRPG", description: "<p>Persona 5 links turn-based dungeon crawl progression with a strict daily calendar social simulation loop. Its mechanical loop rewards exploiting elemental character weaknesses to execute synchronized all-out team attacks.</p>" },
+            { id: "nier", title: "NieR: Automata", category: "games", emoji: "🤖", excerpt: "A philosophical masterwork blending real-time action with dynamic genre-shifting engine scripts.", meta: "Square Enix / PlatinumGames | 2017 | Action RPG", description: "<p>NieR: Automata constantly manipulates engine camera vectors, transforming fluid 3D character action into 2D side-scrolling, top-down shoot-'em-ups, or twin-stick configurations, integrating interface menus into its meta narrative structures.</p>" },
+            { id: "civilization6", title: "Sid Meier's Civilization VI", category: "games", emoji: "🗺️", excerpt: "The definitive historical 4X strategy game utilizing hex-grid city planning structures.", meta: "Firaxis Games | 2016 | 4X Strategy", description: "<p>Civ VI introduced unstacked city management loops, forcing players to deploy specialized districts on discrete map hex tiles. Victory relies on managing complex diplomatic AI scripts, trade throughput, and tech tree progression paths.</p>" },
+            { id: "crusader-kings", title: "Crusader Kings III", category: "games", emoji: "👑", excerpt: "A complex grand strategy grand strategy driving emergent medieval family drama simulation loops.", meta: "Paradox Interactive | 2020 | Grand Strategy", description: "<p>Unlike macro state-management sims, CK3 traces individual genetic and psychological dynasties. The software runs thousands of AI actor scripts tracking secrets, dread, stress, and lineage parameters to fuel emergent political subplots.</p>" },
+            { id: "cities-skylines", title: "Cities: Skylines", category: "games", emoji: "🏙️", excerpt: "The gold standard of urban city building simulation utilizing granular traffic path vectors.", meta: "Colossal Order | 2015 | City Builder", description: "<p>Cities: Skylines replaced outdated abstract region calculations with a localized agent-tracking matrix. Every individual digital resident (Cim) calculates dynamic pathfinding travel routines to work or retail locations, altering highway planning loops.</p>" },
+            { id: "sims4", title: "The Sims 4", category: "games", emoji: "💎", excerpt: "The definitive life-simulation engine managing character autonomy and architectural frameworks.", meta: "Maxis / EA | 2014 | Life Simulation", description: "<p>The Sims 4 centers on an architecture of interlocking motive needles (Hunger, Energy, Social metrics). Characters execute autonomous task scripts parsed by personality trait modifiers, supported by a dense modular room-building creative suite.</p>" },
+            { id: "msfs", title: "Microsoft Flight Simulator", category: "games", emoji: "✈️", excerpt: "A planetary-scale flight simulation driven by cloud data streaming mapping.", meta: "Asobo Studio | 2020 | Simulation", description: "<p>MSFS streams over two petabytes of cloud geographical photogrammetry data via Bing Maps. Its engine applies procedural azure algorithms to convert satellite captures into real-time 3D volumetric weather structures and global topology maps.</p>" },
+            { id: "gt7", title: "Gran Turismo 7", category: "games", emoji: "🏎️", excerpt: "The premier automotive racing simulation prioritizing real-world physics accuracy.", meta: "Polyphony Digital | 2022 | Racing Sim", description: "<p>GT7 maps hyper-precise tire friction coefficients, drafting slipstreams, and real-time changing track moisture layers. The engine tracks localized track surface grip variances to deliver a highly accurate digital motorsport framework.</p>" },
+            { id: "forza", title: "Forza Horizon 5", category: "games", emoji: "🌵", excerpt: "A breathtaking arcade-racing sandbox deploying dynamic regional weather maps.", meta: "Playground Games | 2021 | Arcade Racing", description: "<p>Forza Horizon 5 blends accessible arcade vehicle control loops with an expansive structural reproduction of Mexico, leveraging advanced skybox capture technology and real-time global illumination scripts.</p>" },
+            { id: "street-fighter-6", title: "Street Fighter 6", category: "games", emoji: "🥊", excerpt: "The modern evolution of competitive 2D fighters utilizing strategic gauge economics.", meta: "Capcom | 2023 | Fighting Game", description: "<p>SF6 introduced the Drive Gauge ecosystem, a resource pooling frame-parries, dashes, and armor impacts into a single bar. Mismanaging the resource triggers a 'Burnout' status, changing attack frame safety parameters for competitive tactical play.</p>" },
+            { id: "tekken8", title: "Tekken 8", category: "games", emoji: "🔥", excerpt: "A high-fidelity 3D fighter adding aggressive mechanical rewards to tactical movement.", meta: "Bandai Namco | 2024 | 3D Fighting", description: "<p>Tekken 8 operates across a three-dimensional tracking plane, popularizing the new 'Heat' subsystem. This system rewards offensive behavior by granting chip damage frames and specific frame-advantage extensions to balance traditional defensive wall mechanics.</p>" },
+            { id: "smash-ultimate", title: "Super Smash Bros. Ultimate", category: "games", emoji: "💥", excerpt: "The ultimate crossover platform platform fighter tracking kinetic launch vectors.", meta: "Nintendo | 2018 | Platform Fighter", description: "<p>Ultimate moves away from binary life-point tracks, calculating knockback distance scaling relative to an enemy's damage percentage vector. The game engine balances an astronomical roster of asynchronous video game mascots inside precise platform spaces.</p>" },
+            { id: "fifa24", title: "EA Sports FC 24", category: "games", emoji: "⚽", excerpt: "The massive global sports iteration integrating volumetric capture locomotion data.", meta: "EA Sports | 2023 | Sports", description: "<p>FC 24 maps real-world match movement loops using its HyperMotionV system, translating actual athletic match footage into instant contextual frame animations, layered with lucrative digital card pack team building systems (Ultimate Team).</p>" },
+            { id: "madden", title: "Madden NFL 24", category: "games", emoji: "🏈", excerpt: "The long-running gridiron simulation framework deploying structural player field physics.", meta: "EA Tiburon | 2023 | Sports", description: "<p>Madden 24 features the Fieldsense engine update, delivering an assembly of branching tackle animations and smarter AI pathing scripts to reflect real-time collisions across the line of scrimmage.</p>" },
+            { id: "nba2k", title: "NBA 2K24", category: "games", emoji: "🏀", excerpt: "A photorealistic basketball simulation driven by real-time play coordination engines.", meta: "Visual Concepts | 2023 | Sports", description: "<p>NBA 2K24 introduced ProPLAY, a pipeline mapping real NBA broadcast files straight to the game engine's functional skeletal rigs, paired with deep competitive player career progression tracks.</p>" },
+            { id: "spiderman2", title: "Marvel's Spider-Man 2", category: "games", emoji: "🕸️", excerpt: "An action-sandbox showcasing near-instant streaming rendering speeds via SSD hardware.", meta: "Insomniac Games | 2023 | Action-Adventure", description: "<p>Leveraging specialized console storage architectures, this title streams high-resolution city geometry assets fast enough to allow players to travel at high velocities using kinetic web-wings without hitches or draw-distance limits.</p>" },
+            { id: "god-of-war", title: "God of War Ragnarök", category: "games", emoji: "🪓", excerpt: "A cinematic combat narrative executed via an uninterrupted one-shot camera framework.", meta: "Santa Monica Studio | 2022 | Action-Adventure", description: "<p>Ragnarök maintains a strict single continuous tracking camera angle without cuts or loading transitions. It matches high-fidelity cinematic choreography with deep combat systems driven by elemental status applications (Frost vs Burn tags).</p>" },
+            { id: "tlou", title: "The Last of Us Part I", category: "games", emoji: "🌿", excerpt: "The industry benchmark for prestige cinematic linear narrative and advanced survival AI.", meta: "Naughty Dog | 2022 | Action-Survival", description: "<p>A ground-up remake establishing peak motion-matching animation standards. Its survival combat engine runs an 'aggressive stealth' AI script where enemies coordinate search vectors, share acoustic callouts, and flanking signals dynamically.</p>" },
+            { id: "ghost-tsushima", title: "Ghost of Tsushima", category: "games", emoji: "⚔️", excerpt: "An artistic open-world game replacing traditional mini-map UI with environmental direction.", meta: "Sucker Punch Productions | 2020 | Action-Adventure", description: "<p>Tsushima engineered the 'Guiding Wind' loop to maximize player environmental sightlines. Instead of plastering static waypoint icons across the viewport, HUD markers are replaced by physical wind vectors, particle paths, and animal path guidance clues.</p>" },
+            { id: "starfield", title: "Starfield", category: "games", emoji: "🚀", excerpt: "A massive interstellar space RPG using procedural planet terrain generation.", meta: "Bethesda Game Studios | 2023 | RPG", description: "<p>Starfield operates via Bethesda’s Creation Engine 2, combining hand-crafted narrative hub instances with procedural generation algorithms that calculate terrain topology, gravity parameters, and atmosphere models for over 1,000 stellar bodies.</p>" },
+            { id: "fallout4", title: "Fallout 4", category: "games", emoji: "☢️", excerpt: "A retro-futuristic post-apocalyptic RPG introducing real-time modular base building.", meta: "Bethesda Game Studios | 2015 | RPG", description: "<p>Fallout 4 mixed classic open-world quest structures with a brand new real-time settlement crafting engine. It dynamically tracks scrap component breakdown matrices, power grid routing, and localized base defense triggers.</p>" },
+            { id: "skyrim", title: "The Elder Scrolls V: Skyrim", category: "games", emoji: "🐉", excerpt: "The definitive cultural milestone for absolute open-world player freedom.", meta: "Bethesda Game Studios | 2011 | RPG", description: "<p>Skyrim popularized the 'see a mountain, walk there' sandbox philosophy. Driven by Radiant AI scripts, NPCs pursue daily jobs, while the dynamic quest system shifts location targets based on unvisited map coordinate vectors.</p>" },
+            { id: "diablo4", title: "Diablo IV", category: "games", emoji: "😈", excerpt: "An isometric action-RPG built on shared-world dungeon database synchronization.", meta: "Blizzard Entertainment | 2023 | Action RPG / ARPG", description: "<p>Diablo IV combines classic fast-paced action combat with modern MMO shared-world structures. Its engine calculates vast mathematical damage calculations across thousands of loot affixes and paragon stat board nodes concurrently.</p>" },
+            { id: "path-exile", title: "Path of Exile", category: "games", emoji: "🕸️", excerpt: "The ultimate hyper-complex ARPG famous for its massive passive skill lattice.", meta: "Grinding Gear Games | 2013 | Action RPG", description: "<p>PoE is legendary for its massive, interconnected passive skill matrix and skill-gem slot mechanic. It shuns traditional currency gold in favor of functional bartering items that actively modify item properties, anchoring a complex economy.</p>" },
+            { id: "outer-wilds", title: "Outer Wilds", category: "games", emoji: "🚀", excerpt: "A profound space-exploration puzzle running inside a real-time gravity clock.", meta: "Mobius Digital | 2019 | Adventure Puzzle", description: "<p>Outer Wilds runs a mini solar system where every planet is modeled with real-time orbital physics and gravity vectors. Progression is strictly gated by player knowledge, discovered across a firm 22-minute temporal time-loop script.</p>" },
+            { id: "subnautica", title: "Subnautica", category: "games", emoji: "🌊", excerpt: "The premier underwater survival game utilizing deep vertical atmospheric horror.", meta: "Unknown Worlds | 2018 | Survival", description: "<p>Subnautica masterfully handles progressive spatial locking by adjusting hydrostatic depth pressure rules. To map deeper oceanic levels, players must manage oxygen consumption and craft advanced vehicles while navigating around colossal leviathan AI paths.</p>" },
+            { id: "dead-by-daylight", title: "Dead by Daylight", category: "games", emoji: "🩸", excerpt: "The premier asymmetrical multiplayer horror title utilizing map objective urgency.", meta: "Behaviour Interactive | 2016 | Asymmetrical Horror", description: "<p>Pitting a 3rd-person perspective Killer against four 1st-person perspective Survivors, DBD hinges on line-of-sight manipulation, map geometry looping, and real-time generator completion stress tracks to balance horror scenarios.</p>" },
+            { id: "phasmophobia", title: "Phasmophobia", category: "games", emoji: "👻", excerpt: "A co-op ghost investigation title utilizing advanced local voice recognition engines.", meta: "Kinetic Games | 2020 | Co-op Horror", description: "<p>Phasmophobia's structural innovation is its active voice parsing script. Paranormal entities constantly monitor player microphone frequencies, tracking vocal stress levels and identifying specific keywords to trigger dynamic haunting phases.</p>" },
+            { id: "it-takes-two", title: "It Takes Two", category: "games", emoji: "✂️", excerpt: "A masterclass in cooperative mechanics, shifting mechanics stage-by-stage.", meta: "Hazelight Studios | 2021 | Co-op Platformer", description: "<p>Designed exclusively for two players, this game refuses mechanical repetition. Every distinct level environment introduces entirely new asymmetrical co-op tool configurations, forcing continuous coordination and player communication.</p>" },
+            { id: "portal2", title: "Portal 2", category: "games", emoji: "🌀", excerpt: "The definitive first-person spatial puzzle game utilizing spatial momentum redirection.", meta: "Valve Corporation | 2011 | Puzzle Platformer", description: "<p>Portal 2 tracks velocity vectors as players step through quantum portal coordinates ('speedy thing goes in, speedy thing comes out'). It represents a masterclass in clean environmental puzzle scaling and narrative dialogue comedic pacing.</p>" },
+            { id: "star-rail", title: "Honkai: Star Rail", category: "games", emoji: "🚂", excerpt: "A turn-based space fantasy RPG displaying exceptional tactical optimization loops.", meta: "miHoYo | 2023 | Turn-based RPG", description: "<p>Star Rail translates live gacha structures into a pristine turn-based layout. Pacing is governed by strict speed action-value equations (AV), rewarding players for timing shield application and ultimate skill counters between enemy turns.</p>" },
+            { id: "wukong", title: "Black Myth: Wukong", category: "games", emoji: "🐒", excerpt: "An action-RPG based on Chinese mythology, showing exceptional localized sales records.", meta: "Game Science | 2024 | Action RPG", description: "<p>Black Myth: Wukong represents a historic structural milestone for China's AAA development pipeline. Built on Unreal Engine 5, it balances intricate animation timing strings, varied stance mechanics, and exceptional high-fidelity foliage rendering metrics.</p>" },
+            { id: "animal-well", title: "Animal Well", category: "games", emoji: "🦘", excerpt: "A hyper-dense surrealist Metroidvania driven by an ultra-custom engine design.", meta: "Shared Memory | 2024 | Metroidvania Puzzle", description: "<p>Animal Well scales non-linear progression across a hyper-compressed file size. The developer engineered a custom physics and layer-rendering stack to generate dense particle-fluid mechanics and multi-layered atmospheric puzzle loops.</p>" },
+            { id: "balatro", title: "Balatro", category: "games", emoji: "🃏", excerpt: "An addictive rogue-lite deckbuilder translating classic poker hand vectors into math combos.", meta: "LocalThunk | 2024 | Roguelike Deckbuilder", description: "<p>Balatro scales classic poker mechanics through deep algebraic multipliers. Players acquire 'Joker' mod matrices that calculate exponentially compounding score bonuses, transforming a simple card structure into a deep tactical scaling simulator.</p>" },
+            { id: "helldivers1", title: "Helldivers", category: "games", emoji: "🚀", excerpt: "The original top-down tactical twin-stick shooter utilizing strict grid strafe drops.", meta: "Arrowhead Game Studios | 2015 | Tactical Shooter", description: "<p>Before its transition to 3D, Helldivers established its high-stakes friendly-fire combat via an isometric layout. It pioneered the hardcode mechanical requirement of manual directional d-pad inputs to execute reinforcements under high pressure.</p>" },
+            { id: "hd2-live", title: "Helldivers 2 Galactic Front", category: "games", emoji: "💥", excerpt: "The persistent global war model executing real-time system changes.", meta: "Arrowhead | 2024 | Live-Service Shooter", description: "<p>Helldivers 2 handles systemic macro progression via cloud map sync files. Individual mission successful extraction states add points to global liberation parameters, allowing a dynamic live narrative to evolve through community actions.</p>" },
+            { id: "dragons-dogma2", title: "Dragon's Dogma 2", category: "games", emoji: "🐉", excerpt: "An immersive fantasy RPG centered around physics-based companion assets.", meta: "Capcom | 2024 | Action RPG", description: "<p>Running on the RE Engine, DD2 introduces intricate pawn AI scripts that learn traversal metrics from other players' server instances, paired with combat physics that let characters physically climb giant emergent boss meshes.</p>" },
+            { id: "ff7-rebirth", title: "Final Fantasy VII Rebirth", category: "games", emoji: "⚔️", excerpt: "A sprawling structural expansion scaling classic combat into vast sandbox zones.", meta: "Square Enix | 2024 | JRPG", description: "<p>Rebirth updates active-time turn-based elements into real-time action layout threads. It features massive, non-linear terrain zones and coordinates rich character dynamic synergy attacks to optimize damage pacing windows.</p>" },
+            { id: "tekken8-heat", title: "Tekken 8 Aggression Loop", category: "games", emoji: "🥊", excerpt: "A design breakdown of the high-stakes offensive framing metrics in 3D fighting layout.", meta: "Bandai Namco | 2024 | Fighting System", description: "<p>Tekken 8 re-engineered traditional frame-data standards by providing automated 'Heat' states. Activations override execution frames, granting frame block security and access to devastating unique mechanics to dislodge passive blocking setups.</p>" },
+            { id: "stellar-blade", title: "Stellar Blade", category: "games", emoji: "🗡️", excerpt: "A stylish high-fidelity action title emphasizing rapid parry and dodge frame detection.", meta: "Shift Up | 2024 | Action RPG", description: "<p>Stellar Blade matches fast character locomotion loops with precise collision detection grids. Combat requires reading enemy flash color codes to execute perfect frame parries or instant backward directional invincibility frame dodges.</p>" },
+            { id: "manor-lords", title: "Manor Lords", category: "games", emoji: "🏰", excerpt: "A hyper-realistic medieval city builder running real-time tactical grid battles.", meta: "Slavic Magic | 2024 | Strategy Simulation", description: "<p>An extraordinary indie achievement mapping organic, gridless town growth formulas. Its layout logic matches complex seasonal supply chain calculations with high-stakes total war tactical unit directional positioning models.</p>" },
+            { id: "elden-dlc", title: "Elden Ring: Shadow of the Erdtree", category: "games", emoji: "🌳", excerpt: "A monumental extension exploring interlocking vertical dungeon layouts.", meta: "FromSoftware | 2024 | Action RPG", description: "<p>Shadow of the Erdtree scales FromSoftware’s level design into a hyper-layered vertical landmass. The topography stacks multiple biome layers on top of each other, accessible through intricate, hidden physical path descents.</p>" },
+            { id: "destiny2-final", title: "Destiny 2: The Final Shape", category: "games", emoji: "🌌", excerpt: "The dramatic multi-year narrative conclusion introducing combined prismatic skill classes.", meta: "Bungie | 2024 | Looter-Shooter", description: "<p>The Final Shape modified destiny's class system by implementing Prismatic pathways, letting players merge Light and Dark elemental skill sets, requiring complex recalculations of status balance algorithms across online network raids.</p>" },
+            { id: "frostpunk2", title: "Frostpunk 2", category: "games", emoji: "❄️", excerpt: "A political society survival engine moving progression scaling from streets to factions.", meta: "11 bit studios | 2024 | City Builder / Survival", description: "<p>Frostpunk 2 broadens society simulation loops by replacing simple thermal layouts with faction ideological voting engines. Progression depends on balancing legislative gridlocks and managing systemic resource constraints across decades.</p>" },
+            { id: "space-marine2", title: "Warhammer 40,000: Space Marine 2", category: "games", emoji: "🛡️", excerpt: "A visceral action title rendering immense insectoid enemy swarm matrices.", meta: "Saber Interactive | 2024 | Third-Person Shooter", description: "<p>Utilizing proprietary swarm rendering software pipelines, Space Marine 2 tracks hundreds of individual Tyranid AI entities moving across the screen space concurrently, reacting smoothly to physical impact vectors and explosive damage grids.</p>" },
+            { id: "stalker2", title: "S.T.A.L.K.E.R. 2: Heart of Chornobyl", category: "games", emoji: "☢️", excerpt: "A hardcore survival simulation powered by autonomous environmental simulation scripts.", meta: "GSC Game World | 2024 | Survival FPS", description: "<p>Stalker 2 utilizes the advanced A-Life 2.0 system. This script simulates faction wars, wildlife migration paths, and anomaly shifts across the open radioactive zone autonomously, independent of direct proximity to the player avatar location.</p>" },
+            { id: "enshrouded", title: "Enshrouded", category: "games", emoji: "🌫️", excerpt: "A voxel-based survival crafting game managing dense volumetric fog boundaries.", meta: "Keen Games | 2024 | Survival Crafting", description: "<p>Enshrouded deploys a fully editable voxel landscape matrix. Players can carve tunnels or construct detailed fortresses anywhere on the map, paired with dynamic volumetric shroud areas that apply damage degradation scales to players over time.</p>" },
+            { id: "ncaa25", title: "College Football 25", category: "games", emoji: "🏈", excerpt: "The historic revival of college sports simulation deploying high-pressure stadium audio mechanics.", meta: "EA Sports | 2024 | Sports", description: "<p>College Football 25 models the extreme atmospheric variation of student sections through the 'Mental Abilities' loop. High stadium audio tracking variables actively disrupt opposing freshman quarterback pre-snap visibility vectors and control loops.</p>" },
+            { id: "p3reload", title: "Persona 3 Reload", category: "games", emoji: "⏳", excerpt: "A complete engine remake scaling classic turn-based JRPG structures to modern viewports.", meta: "Atlus | 2024 | JRPG", description: "<p>Reload adapts legacy dungeon crawling scripts into high-fidelity Unreal Engine spaces. It updates traditional tactical layouts with 'Theurgy' ultimate systems, while maintaining the iconic daily schedule social management pipeline.</p>" },
+            { id: "zenless", title: "Zenless Zone Zero", category: "games", emoji: "📻", excerpt: "A high-velocity urban action title showcasing rapid parity character swapping frames.", meta: "miHoYo | 2024 | Action RPG", description: "<p>ZZZ centers on frame-perfect combat execution templates. Its layout loops prioritize rapid helper assists and defensive swap strings, triggering visual and sonic indicators that reward rhythmic combat execution inputs.</p>" },
+            { id: "multiversus", title: "MultiVersus", category: "games", emoji: "🥊", excerpt: "A free-to-play platform fighter emphasizing cooperative team positioning mechanics.", meta: "Player First Games | 2024 | Platform Fighter", description: "<p>Re-released on Unreal Engine 5, MultiVersus separates itself from smash bros by designing explicitly for 2v2 combat loops. Character ability kits are engineered with supportive vectors designed to pull allies out of high-velocity launch tracks.</p>" },
+            { id: "star-wars-outlaws", title: "Star Wars Outlaws", category: "games", emoji: "🪐", excerpt: "The first true open-world sandbox exploring scoundrel syndicate reputation tracking grids.", meta: "Massive Entertainment | 2024 | Action-Adventure", description: "<p>Outlaws leverages the Snowdrop Engine to stream massive open planetary landscapes seamlessly via speeder navigation loops. The game features an active Syndicate reputation matrix that permanently adjusts local pricing vectors and faction hostility scripts.</p>" },
+            { id: "wuwa", title: "Wuthering Waves", category: "games", emoji: "🌊", excerpt: "An open-world action gacha game focusing heavily on competitive parry animation metrics.", meta: "Kuro Games | 2024 | Action RPG", description: "<p>Wuthering Waves positions itself at the top of the competitive action space by prioritizing deep execution frames. It introduces an 'Echo' collection track, allowing players to transform instantly into defeated boss monsters to deploy tactical skills.</p>" },
+            { id: "indika", title: "Indika", category: "games", emoji: "⛪", excerpt: "A surreal, narrative-driven puzzle game exploring religious psychology frameworks.", meta: "Odd Meter | 2024 | Narrative Adventure", description: "<p>Indika uses changing architectural perspectives and environmental scale distortion tricks to represent the internal religious struggles of a 19th-century nun, creating an exceptional artistic case study in environmental storytelling.</p>" },
+            { id: "pacific-drive", title: "Pacific Drive", category: "games", emoji: "🚗", excerpt: "A first-person driving survival game where a car functions as your primary base loop.", meta: "Ironwood Studios | 2024 | Survival Adventure", description: "<p>Pacific Drive anchors progression inside a station wagon. Every single sub-part—doors, panels, tires, battery lines—has discrete durability metrics and status flaws that must be diagnosed, repaired, and insulated from anomalies inside an active zone.</p>" },
+            { id: "nine-soles", title: "Nine Sols", category: "games", emoji: "🐱", excerpt: "A pristine 2D 'Taopunk' action platformer driven by precise Sekiro-style parry tracks.", meta: "Red Candle Games | 2024 | Metroidvania Action", description: "<p>Nine Sols combines fluid 2D Metroidvania map layouts with high-stakes, rhythm-focused parry mechanics. Players must deflect incoming hitboxes frame-for-frame to accumulate internal energy stacks, discharged via kinetic talisman strikes.</p>" },
+            { id: "v-rising", title: "V Rising", category: "games", emoji: "🏰", excerpt: "An isometric gothic survival crafting title mapping modular vampire castle networks.", meta: "Stunlock Studios | 2024 | Action Survival", description: "<p>V Rising integrates classic action RPG combat paths with structural base-building loops. Players avoid physical sun-ray vectors calculated in real-time by the lighting engine while collecting blood tracking assets to unlock technical crafting trees.</p>" },
+            { id: "unknown9", title: "Unknown 9: Awakening", category: "games", emoji: "🔮", excerpt: "An action-adventure game focusing on dimensional shifting stealth and body manipulation.", meta: "Reflector Entertainment | 2024 | Action-Adventure", description: "<p>Awakening features a unique 'Step' mechanic, allowing players to jump their perspective into enemy target AI meshes to chain synchronized environmental attacks, shifting back to protagonist position upon execution completion frames.</p>" },
+            { id: "age-myth-retold", title: "Age of Mythology: Retold", category: "games", emoji: "🔱", excerpt: "A foundational real-time strategy remake updating god power cooldown loops.", meta: "World's Edge | 2024 | RTS", description: "<p>Retold modernizes classic RTS mechanics by converting legacy one-time mythic powers into balanced dynamic cooldown tracks. The engine handles large-scale unit priority tracing and upgraded pathfinding logic across high-fidelity historic fields.</p>" },
+            { id: "xdefiant", title: "XDefiant", category: "games", emoji: "🎯", excerpt: "An arcade arena shooter stripping out match matchmaking algorithmic delay parameters.", meta: "Ubisoft | 2024 | Arena Shooter", description: "<p>XDefiant explicitly avoids Skill-Based Matchmaking (SBMM) structures in casual playlists to preserve classic arcade shooter community pacing. It matches fast-paced locomotion inputs with tactical character archetype ability tracks.</p>" },
+            { id: "test-drive-sc", title: "Test Drive Unlimited Solar Crown", category: "games", emoji: "🏁", excerpt: "A massive open-world driving network mapping Hong Kong Island 1:1 scale geometry.", meta: "KT Racing | 2024 | Racing Sim", description: "<p>Solar Crown executes a full 1:1 reproduction of Hong Kong Island's terrain meshes. The game structure prioritizes a shared persistent online server framework where car dealerships, clubs, and tracks act as social hubs.</p>" },
+            { id: "visions-mana", title: "Visions of Mana", category: "games", emoji: "🌱", excerpt: "The modern revival of a legendary action JRPG series showcasing open aerial battle loops.", meta: "Square Enix | 2024 | JRPG", description: "<p>Visions of Mana maps rich elemental mechanics onto fluid character locomotion structures. Combat strings seamlessly shift between ground targets and full aerial physics tracks, incorporating elemental ring modifiers on the fly.</p>" },
+            { id: "senua2", title: "Senua's Saga: Hellblade II", category: "games", emoji: "🎨", excerpt: "A stunning photorealistic showcase utilizing advanced binaural audio rendering maps.", meta: "Ninja Theory | 2024 | Cinematic Adventure", description: "<p>Hellblade II pushes spatial audio architectures to their limits. It deploys intensive binaural microphone arrays to simulate accurate auditory hallucinations that float around the player's real-world headset coordinate space, paired with unprecedented facial capture fidelity.</p>" },
+            { id: "homeworld3", title: "Homeworld 3", category: "games", emoji: "🚀", excerpt: "A true three-dimensional real-time strategy game introducing massive physical cover geometry.", meta: "Blackbird Interactive | 2024 | 3D RTS", description: "<p>Homeworld 3 moves away from empty space navigation by adding 'Megaliths'—gargantuan industrial space assets. Spacecraft AI can calculate paths through interior trench networks to break enemy targeting rays and execute stealth flanking tracks.</p>" },
+            { id: "flintlock", title: "Flintlock: The Siege of Dawn", category: "games", emoji: "🪓", excerpt: "An action RPG mixing fast gunpowder mobility with traditional Soulslike combat.", meta: "A44 Games | 2024 | Action RPG", description: "<p>Flintlock integrates rhythmic gun execution strings with axe melee combat loops. Players manipulate an aerial traversal companion to chain long-distance jump vectors, bypassing traditional map barriers in combat spaces.</p>" },
+            { id: "kunitsu-gami", title: "Kunitsu-Gami: Path of the Goddess", category: "games", emoji: "👺", excerpt: "A unique genre fusion combining real-time action layout with tower defense lane coordination.", meta: "Capcom | 2024 | Action Strategy", description: "<p>Kunitsu-Gami balances two alternating phases: a day phase dedicated to resource mapping and routing villager lane configurations, and a night phase requiring active character slashing while commanding defensive positioning slots.</p>" },
+            { id: "cat-quest3", title: "Cat Quest III", category: "games", emoji: "🏴‍☠️", excerpt: "An accessible open-world top-down RPG executing fluid pirate ship combat updates.", meta: "The Gentlebros | 2024 | Action RPG", description: "<p>Cat Quest III streamlines classic action RPG stat tracks into a highly responsive, charming open-world layout. It introduces seamless transitions between ground character combat and high-velocity naval sailing cannon vectors.</p>" },
+            { id: "concord", title: "Concord", category: "games", emoji: "🚀", excerpt: "A historical live-service hero shooter highlighting tactical gear pick-up cooldowns.", meta: "Firewalk Studios | 2024 | Hero Shooter", description: "<p>Concord prioritized character momentum weights and structural hero composition. Its underlying framework deployed persistent deployable shields and coordinate items that remained active across distinct character respawn rounds.</p>" },
+            { id: "the-first-descendant", title: "The First Descendant", category: "games", emoji: "🦾", excerpt: "A high-fidelity sci-fi looter-shooter utilizing rapid hook grappling physics loops.", meta: "Nexon | 2024 | Looter-Shooter", description: "<p>Built on Unreal Engine 5, this title matches cooperative boss farming mechanics with fast-paced vertical grappling vectors. Players target specific destructible boss component meshes to rip off protective armor layers in real-time.</p>" },
+            { id: "chained-together", title: "Chained Together", category: "games", emoji: "🔗", excerpt: "A viral co-op platformer running interconnected rigid-body chain physics calculation scripts.", meta: "Subsol Games | 2023 | Co-op Platformer", description: "<p>This multiplayer title binds four character models together using an active physical chain link script. Individual velocity, weight vector displacement, and falling momentum calculate across the entire group, turning simple jumps into complex physics coordination tasks.</p>" },
+            { id: "gray-zone", title: "Gray Zone Warfare", category: "games", emoji: "🪖", excerpt: "A tactical military sandbox utilizing highly advanced medical damage tracking logs.", meta: "MADFINGER Games | 2024 | Tactical FPS", description: "<p>Gray Zone replaces traditional health bar pools with a comprehensive health matrix that maps blood volume, internal organ damage vectors, and physical mobility degradation relative to precise ballistic mesh penetration angles.</p>" },
+            { id: "abiotik", title: "Abiotic Factor", category: "games", emoji: "🧪", excerpt: "A co-op survival crafting title adapting retro sci-fi facility layout design lines.", meta: "Deep Field Games | 2024 | Survival Crafting", description: "<p>Abiotic Factor applies classic half-life world aesthetics to a co-op survival loop. Players fortify subterranean laboratory rooms, splicing anomalous technology items together to build custom baseline tracking defenses.</p>" },
+            { id: "elden-ring-core", title: "Elden Ring Matrix", category: "games", emoji: "💍", excerpt: "The open-world masterpiece synthesizing punishing Action-RPG mechanics with unguided exploration.", meta: "FromSoftware | 2022 | Action RPG", description: "<p>Elden Ring successfully translated the meticulous combat of the Soulslike genre into a vast open world called the Lands Between. It relies on minimalist UI design, choosing to avoid map icons, quest logs, or tracking markers that dominate other contemporary games.</p>" },
+            { id: "minecraft-vox", title: "Minecraft Engine", category: "games", emoji: "🟩", excerpt: "The best-selling video game of all time, redefining sandbox design and emergent community gameplay.", meta: "Mojang Studios | 2011 | Sandbox Survival", description: "<p>Minecraft is a cultural milestone. Originally developed as an indie passion project, it discards traditional linear objectives in favor of an infinitely generating world made entirely of blocks. Players gather resources, craft equipment, and shape the terrain to their imagination.</p>" },
+            { id: "witcher3-wild", title: "The Witcher 3 Universe", category: "games", emoji: "🐺", excerpt: "A landmark narrative RPG that established a modern standard for open-world quest design.", meta: "CD Projekt Red | 2015 | Narrative RPG", description: "<p>The Witcher 3: Wild Hunt chronicles the monster hunter Geralt of Rivia. It altered the expectations of open-world role-playing games by completely eliminating empty, filler content. Every side quest operates with complex cinematic staging, professional voice work, and nuanced narrative consequences.</p>" },
+            { id: "pacman-ai", title: "Pac-Man Classics", category: "games", emoji: "🟡", excerpt: "The historic golden standard of arcade pop culture, establishing the maze-chase formula.", meta: "Toru Iwatani | 1980 | Arcade Cabinet", description: "<p>Pac-Man represents one of the earliest global juggernauts in digital entertainment. Stepping away from the dominant space-shooter formats of the late 1970s, it introduced an accessible maze navigation game loop that appealed across all demographics.</p>" },
+
+            // ===================== RPG =====================
+            { id: "baldurs-gate3", title: "Baldur's Gate 3", category: "rpg", emoji: "🎲", excerpt: "A landmark CRPG adapting 5th Edition D&D rules into a fully reactive 3D world.", meta: "Larian Studios | 2023 | CRPG", description: "<p>Baldur's Gate 3 faithfully translates the Dungeons & Dragons 5e ruleset into an interactive narrative engine. Every conversation, environment, and encounter calculates dice-roll probability checks against character stat modifiers, making failure states as narratively rich as victories. Its co-op framework allows up to four players to share the same evolving story simultaneously.</p>" },
+            { id: "mass-effect2", title: "Mass Effect 2", category: "rpg", emoji: "🌌", excerpt: "The pinnacle of the BioWare RPG formula: squad loyalty, moral weight, and galaxy-scale stakes.", meta: "BioWare | 2010 | Action RPG", description: "<p>Mass Effect 2 structures its entire campaign around a 'suicide mission' framework. Each squad member has a personal loyalty arc that the player must complete — failure to do so increases statistical mortality odds in the climactic finale. It remains the gold standard of consequential character-driven RPG design.</p>" },
+            { id: "dragon-age-origins", title: "Dragon Age: Origins", category: "rpg", emoji: "🐉", excerpt: "A deep tactical RPG with six unique origin stories shaping the world's reaction to your character.", meta: "BioWare | 2009 | CRPG", description: "<p>Origins deploys a revolutionary prologue system where each player race and class begins the game in an entirely different narrative context, causing NPCs and factions to react uniquely throughout the campaign. Its pause-and-play tactical combat system demands careful ability chain management.</p>" },
+            { id: "ffxiv", title: "Final Fantasy XIV: A Realm Reborn", category: "rpg", emoji: "🌏", excerpt: "The greatest comeback story in gaming, rebuilt from a failed launch into the best MMORPG.", meta: "Square Enix | 2013 | MMORPG", description: "<p>After its catastrophic 2010 launch, Square Enix shut down the servers, rebuilt the entire engine, and relaunched as A Realm Reborn in 2013. The new version features a richly written MSQ narrative spanning multiple expansion arcs, widely considered to have some of the best storytelling in the entire RPG genre.</p>" },
+            { id: "pillars-eternity", title: "Pillars of Eternity", category: "rpg", emoji: "📜", excerpt: "A successful Kickstarter revival of the classic isometric CRPG format with a rich lore.", meta: "Obsidian Entertainment | 2015 | CRPG", description: "<p>Pillars of Eternity uses a real-time-with-pause combat system and a massive hand-crafted world with thousands of lines of reactive dialogue. Its 'Deadfire' sequel refined the formula further, adding ship-to-ship combat and a fully explorable archipelago.</p>" },
+            { id: "planescape-torment", title: "Planescape: Torment", category: "rpg", emoji: "💀", excerpt: "A philosophical CRPG that asked 'What can change the nature of a man?' and answered it.", meta: "Black Isle Studios | 1999 | CRPG", description: "<p>Planescape: Torment is widely regarded as the most literary game ever made. Playing as an immortal amnesiac called The Nameless One, combat is actively discouraged; most encounters can be resolved entirely through dialogue. Its central question about identity and mortality still resonates decades later.</p>" },
+            { id: "divinity2", title: "Divinity: Original Sin 2", category: "rpg", emoji: "⚗️", excerpt: "A CRPG with unmatched elemental surface interaction systems and co-op depth.", meta: "Larian Studios | 2017 | CRPG", description: "<p>Original Sin 2 builds its combat around a physics-based elemental system: fire ignites oil slicks, electricity conducts through water, and blood creates new surfaces for debuffs. Its four-player co-op allows players to split off and pursue entirely separate objectives simultaneously.</p>" },
+            { id: "pathfinder-wrath", title: "Pathfinder: Wrath of the Righteous", category: "rpg", emoji: "🏹", excerpt: "A sprawling crusade-management CRPG integrating mythic powers and army logistics.", meta: "Owlcat Games | 2021 | CRPG", description: "<p>Wrath of the Righteous adds a crusade layer atop the classic Pathfinder CRPG combat. Players manage an entire military campaign, deploying crusader armies across a tactical map while navigating a deeply branching mythic path system that fundamentally alters character abilities and story outcomes.</p>" },
+            { id: "xenoblade3", title: "Xenoblade Chronicles 3", category: "rpg", emoji: "🌿", excerpt: "A massive JRPG about warring colonies and the nature of life defined by combat.", meta: "Monolith Soft | 2022 | JRPG", description: "<p>Xenoblade 3 introduces the Ouroboros fusion system, where paired characters can merge into a massive joint form mid-battle. Its auto-attacking real-time combat system hides enormous mechanical depth in art cooldown management, class fusion, and chain-attack burst windows.</p>" },
+            { id: "tales-of-arise", title: "Tales of Arise", category: "rpg", emoji: "🔥", excerpt: "A visually stunning JRPG that modernized the Tales combat formula with aerial rave systems.", meta: "Bandai Namco | 2021 | Action JRPG", description: "<p>Tales of Arise deploys a fully real-time action combat engine that tracks six-member party switching, aerial combo chaining, and a Boost Strike cooperative finishing system. Its thematic narrative explores liberation from oppression with rare moral nuance for the genre.</p>" },
+            { id: "chrono-trigger", title: "Chrono Trigger", category: "rpg", emoji: "⏱️", excerpt: "The SNES golden-age masterpiece celebrated for its multi-ending time-travel narrative.", meta: "Square | 1995 | JRPG", description: "<p>Developed by a 'Dream Team' of Final Fantasy and Dragon Ball creators, Chrono Trigger pioneered the dual-tech and triple-tech cooperative attack system. Its thirteen distinct endings, unlockable via a New Game+ speedrun, were revolutionary for 1995 and remain a benchmark of RPG replayability design.</p>" },
+            { id: "ff6", title: "Final Fantasy VI", category: "rpg", emoji: "🎹", excerpt: "The peak of the SNES era JRPG with an ensemble cast and operatic villain.", meta: "Square | 1994 | JRPG", description: "<p>Final Fantasy VI features no single protagonist, instead distributing narrative weight across 14 playable characters. Its villain Kefka Palazzo is considered gaming's greatest antagonist for actually succeeding in destroying the world mid-game. The opera sequence remains a landmark of emotional video game storytelling.</p>" },
+            { id: "dq11", title: "Dragon Quest XI", category: "rpg", emoji: "🧙", excerpt: "The definitive modern JRPG faithfully upholding the 35-year Dragon Quest tradition.", meta: "Square Enix | 2018 | JRPG", description: "<p>Dragon Quest XI synthesizes the franchise's signature turn-based combat with Akira Toriyama's iconic character designs. Its post-game chapter offers an entirely new story arc with significant narrative twists, rewarding long-form player investment with meaningful structural surprises.</p>" },
+            { id: "gothic2", title: "Gothic 2", category: "rpg", emoji: "🏰", excerpt: "A pioneering open-world CRPG with a fully simulated NPC schedule system.", meta: "Piranha Bytes | 2002 | Action RPG", description: "<p>Gothic 2 was a decade ahead of its time. Every NPC follows a 24-hour routine — sleeping, working, eating — that responds dynamically to world events. Its unforgiving difficulty and deeply systemic world influenced an entire generation of European RPG developers.</p>" },
+            { id: "tyranny", title: "Tyranny", category: "rpg", emoji: "⚖️", excerpt: "A CRPG where you serve an evil overlord and must decide how ruthlessly to enforce his rule.", meta: "Obsidian Entertainment | 2016 | CRPG", description: "<p>Tyranny inverts the genre premise entirely: you have already lost. As an Overlord's Fatebinder, your role is to adjudicate conquered territories. Every choice builds favor or fear with rival factions, creating emergent political outcomes from moral compromise rather than heroism.</p>" },
+
+            // ===================== ACTION =====================
+            { id: "doom-eternal", title: "DOOM Eternal", category: "action", emoji: "💀", excerpt: "A masterclass in aggressive resource management masquerading as a first-person shooter.", meta: "id Software | 2020 | FPS", description: "<p>DOOM Eternal reframes its combat as a dance of resource extraction. Glory kills restore health, chainsawing enemies gives ammo, and flaming enemies drop armor. Players must juggle all three economies simultaneously across arenas designed for maximum vertical mobility exploitation.</p>" },
+            { id: "bayonetta2", title: "Bayonetta 2", category: "action", emoji: "💜", excerpt: "A technical action game masterwork with the deepest combo system in the genre.", meta: "PlatinumGames | 2014 | Character Action", description: "<p>Bayonetta 2 builds on its predecessor's Witch Time dodge mechanic with new Umbran Climax burst states and Masked Lumen combat contrast sections. PlatinumGames' commitment to animation-cancel windows and input-reading enemy design produces some of the most technically expressive combat in gaming history.</p>" },
+            { id: "sekiro", title: "Sekiro: Shadows Die Twice", category: "action", emoji: "🗡️", excerpt: "A posture-based sword duel system demanding rhythmic deflection mastery.", meta: "FromSoftware | 2019 | Action-Adventure", description: "<p>Sekiro abandons stamina-based defense in favor of a posture system where deflections and attacks accumulate enemy stance damage. Perfect deflection chains deal more posture damage than attacks, rewarding aggressive rhythmic swordplay over passive guarding.</p>" },
+            { id: "hades", title: "Hades", category: "action", emoji: "🔱", excerpt: "The roguelite that mainstreamed the genre via reactive narrative and exceptional polish.", meta: "Supergiant Games | 2020 | Action Roguelite", description: "<p>Hades resolves the tension between narrative and rogue-lite replayability by making failure a plot mechanic. Every death returns Zagreus to the House of Hades where new dialogue advances the story. No run is wasted — story and skill both compound across attempts.</p>" },
+            { id: "returnal", title: "Returnal", category: "action", emoji: "🌀", excerpt: "A bullet-hell third-person shooter with oppressive atmosphere and roguelite permanence.", meta: "Housemarque | 2021 | Third-Person Shooter", description: "<p>Returnal marries Housemarque's arcade precision bullet-pattern expertise with a Lovecraftian psychological horror narrative. Its roguelite loop strips progress on death, creating genuine stakes. The DualSense adaptive triggers assign different weapon modes to varying pressure levels on L2.</p>" },
+            { id: "mgs5", title: "Metal Gear Solid V: The Phantom Pain", category: "action", emoji: "🐴", excerpt: "An open-world stealth sandbox with unmatched systemic infiltration depth.", meta: "Konami / Kojima Productions | 2015 | Stealth Action", description: "<p>MGSV deploys fully dynamic enemy AI that adapts to player tactics between missions — equipping helmets if headshots are used, wearing earplugs if Fulton extractions are detected. Its open-world iDROID mission framework allowed unprecedented stealth sandbox flexibility.</p>" },
+            { id: "dmc5", title: "Devil May Cry 5", category: "action", emoji: "🌹", excerpt: "The apex of the stylish action genre with three mechanically distinct playable characters.", meta: "Capcom | 2019 | Character Action", description: "<p>DMC5 scores player performance in real-time on a letter-grade system from D to SSS based on style variety, damage avoidance, and combo creativity. Each of its three characters — Nero, Dante, and V — operates on an entirely different mechanical framework with no overlap.</p>" },
+            { id: "ghostrunner", title: "Ghostrunner", category: "action", emoji: "⚡", excerpt: "A one-hit-kill cyberpunk action platformer demanding frame-perfect wall-running.", meta: "One More Level | 2020 | Action Platformer", description: "<p>Ghostrunner distills cyberpunk traversal into pure momentum. The player dies in one hit from any enemy, and so do all enemies from the player's katana. Its checkpoint-dense level design turns each arena into a reflex puzzle that rewards clean, flowing solutions over brute force.</p>" },
+            { id: "sifu", title: "Sifu", category: "action", emoji: "👊", excerpt: "A kung fu brawler where aging on death creates strategic risk-reward tradeoffs.", meta: "Sloclap | 2022 | Beat 'em Up", description: "<p>Sifu's central mechanic turns death into a resource: each defeat adds years to your character's age, increasing damage dealt but reducing maximum health. Players must decide when to spend age to continue versus resetting to preserve vitality for later boss encounters.</p>" },
+            { id: "hi-fi-rush", title: "Hi-Fi Rush", category: "action", emoji: "🎸", excerpt: "A rhythm-action game where the entire world pulses to the beat.", meta: "Tango Gameworks | 2023 | Rhythm Action", description: "<p>Hi-Fi Rush synchronises every element — environmental hazards, enemy attacks, combo windows, and even background scenery — to a BPM clock. Attacking on-beat generates score multipliers, and the game rewards musical awareness as much as button execution.</p>" },
+            { id: "control", title: "Control", category: "action", emoji: "🔫", excerpt: "A telekinetic third-person shooter set in a brutalist Metroidvania government building.", meta: "Remedy Entertainment | 2019 | Third-Person Shooter", description: "<p>Control anchors its combat to a telekinetic Launch ability that turns environmental debris into hitscan projectiles. Its interconnected Oldest House map rewards exploration with Metroidvania-style ability unlocks, wrapped in a compelling New Weird narrative full of cryptic Bureau documents.</p>" },
+            { id: "ultrakill", title: "ULTRAKILL", category: "action", emoji: "🩸", excerpt: "A retro-styled FPS where health regenerates by shooting enemies at point-blank range.", meta: "Arsi 'Hakita' Patala | 2020 | FPS", description: "<p>ULTRAKILL's health system demands constant aggression: standing still is death, as blood can only be collected by landing at close range. Its style ranking system, rocket-surfing physics, and arsenal of trick shots have cultivated one of the most dedicated speedrun communities in indie gaming.</p>" },
+            { id: "titanfall2", title: "Titanfall 2", category: "action", emoji: "🤖", excerpt: "The greatest single-player FPS campaign of its generation, criminally underplayed.", meta: "Respawn Entertainment | 2016 | FPS", description: "<p>Titanfall 2's campaign is a relentless showcase of creative set-piece design. Its 'Effect and Cause' time-manipulation level is frequently cited as one of the best individual levels in FPS history. The momentum-based wall-running locomotion system set the template for Apex Legends' movement philosophy.</p>" },
+            { id: "nioh2", title: "Nioh 2", category: "action", emoji: "👹", excerpt: "A dense Soulslike action game with unmatched weapon stance depth and Yokai abilities.", meta: "Team Ninja | 2020 | Action RPG", description: "<p>Nioh 2 layers a three-stance system — High, Mid, Low — onto every weapon class, tripling the effective moveset available per weapon. Its Burst Counter mechanic requires reading Yokai attack telegraphs to absorb and redirect their most devastating hits.</p>" },
+            { id: "hollow-knight", title: "Hollow Knight", category: "action", emoji: "🦋", excerpt: "A Metroidvania masterpiece with 40+ hours of hand-crafted underground world exploration.", meta: "Team Cherry | 2017 | Metroidvania", description: "<p>Hollow Knight maps an interconnected network of underground kingdoms with zero hand-holding. Its Soul magic system charges via melee attacks and discharges as healing or spells, making resource management central to every boss encounter. The Pantheon of Hallownest DLC adds some of the most demanding platformer challenges ever designed.</p>" },
+
+            // ===================== STRATEGY =====================
+            { id: "starcraft2", title: "StarCraft II", category: "strategy", emoji: "🛸", excerpt: "The definitive RTS esport, balancing three completely asymmetric factions at high APM.", meta: "Blizzard Entertainment | 2010 | RTS", description: "<p>StarCraft II's three-race design — Terran, Zerg, and Protoss — each operates on a fundamentally different macro economy and unit interaction matrix. Competitive play measures Actions Per Minute as a performance KPI, with grandmaster players executing precise build-order queues with sub-second timing.</p>" },
+            { id: "total-war-warhammer3", title: "Total War: Warhammer III", category: "strategy", emoji: "⚔️", excerpt: "A grand strategy game pairing diplomatic campaign maps with massive real-time battles.", meta: "Creative Assembly | 2022 | Strategy", description: "<p>Warhammer III manages simultaneous strategic and tactical layers. On the campaign map, players negotiate alliances, manage corruption, and move armies across provinces. On the battlefield, units of hundreds of models calculate morale, flanking bonuses, and magical ability trajectories in real time.</p>" },
+            { id: "into-the-breach", title: "Into the Breach", category: "strategy", emoji: "🦿", excerpt: "A perfect information turn-based tactics game with no randomness in enemy intent.", meta: "Subset Games | 2018 | Tactics", description: "<p>Into the Breach shows every enemy action before it resolves, converting a strategy game into a pure puzzle. Victory depends on creative use of push/pull displacement mechanics to redirect attacks, protect civilians, and position mechs for maximum chain reactions with minimal resources.</p>" },
+            { id: "hades-strategy", title: "XCOM 2", category: "strategy", emoji: "👽", excerpt: "A tension-laden tactics game where permadeath soldiers build emotional attachment.", meta: "Firaxis Games | 2016 | Turn-Based Tactics", description: "<p>XCOM 2 weaponises soldier naming and progression to manufacture emotional investment. Losing a colonel who has survived 30 missions creates genuine grief. Its concealment system flips the traditional XCOM dynamic: players now ambush the enemy rather than react to alien aggression.</p>" },
+            { id: "anno-1800", title: "Anno 1800", category: "strategy", emoji: "🏭", excerpt: "A deep industrial-era city builder with complex supply chain logistics.", meta: "Ubisoft Blue Byte | 2019 | City Builder", description: "<p>Anno 1800 balances population-tier satisfaction chains across hundreds of building types. Each citizen tier unlocks new production needs — Farmer needs differ entirely from Engineer needs — creating compound logistics that must scale simultaneously across island chains.</p>" },
+            { id: "stellaris", title: "Stellaris", category: "strategy", emoji: "🌠", excerpt: "A grand 4X space strategy game driven by emergent narrative event chains.", meta: "Paradox Interactive | 2016 | Grand Strategy", description: "<p>Stellaris procedurally generates its galaxy, alien species, and diplomatic relationships at the start of every run. Its mid-game crisis events — awakened fallen empires, interdimensional invaders — force coalition diplomacy among previously hostile factions.</p>" },
+            { id: "hoi4", title: "Hearts of Iron IV", category: "strategy", emoji: "🌍", excerpt: "The definitive WWII grand strategy simulation, tracking every division on the globe.", meta: "Paradox Interactive | 2016 | Grand Strategy", description: "<p>HOI4 simulates the entire Second World War at a per-division operational level. Players design custom division templates, manage supply lines across terrain types, execute naval invasions, and conduct air superiority campaigns — all simultaneously on a real-time global map.</p>" },
+            { id: "age-of-empires4", title: "Age of Empires IV", category: "strategy", emoji: "🏯", excerpt: "A historically grounded RTS bringing eight asymmetric civilisations to modern hardware.", meta: "Relic Entertainment | 2021 | RTS", description: "<p>AoE IV differentiates its eight civs at a fundamental mechanical level — the Mongols can pack and relocate their entire town, while the Chinese unlock imperial dynasties that change tech tree structures. Landmark buildings replace the generic wonder system with civ-specific strategic buildings.</p>" },
+            { id: "wargroove2", title: "Wargroove 2", category: "strategy", emoji: "🎺", excerpt: "A pixel-art turn-based tactics game expanding on Advance Wars' movement grid formula.", meta: "Chucklefish | 2023 | Turn-Based Tactics", description: "<p>Wargroove 2 adds roguelite Conquest mode runs alongside its branching campaign. Its commander Groove system charges ultimate abilities through combat actions, requiring tactical prioritisation of both damage dealing and ability charging to control tempo.</p>" },
+            { id: "phoenix-point", title: "Phoenix Point", category: "strategy", emoji: "🦠", excerpt: "An XCOM-spiritual successor with fully destructible enemy body-part targeting.", meta: "Snapshot Games | 2019 | Turn-Based Tactics", description: "<p>Phoenix Point introduces a manual aiming reticle into turn-based tactics, allowing players to precisely target enemy limbs. Shooting a Crab-Man's claw removes its melee attack; targeting a Siren's head prevents its mind-control ability — adding anatomical threat analysis to standard tactics play.</p>" },
+            { id: "frostpunk-og", title: "Frostpunk", category: "strategy", emoji: "🌨️", excerpt: "A brutal society survival game where every law you pass has a moral cost.", meta: "11 bit studios | 2018 | City Builder / Survival", description: "<p>Frostpunk's Book of Laws mechanic forces players to enact increasingly authoritarian policies to survive the cold. Child Labour, Propaganda, and Emergency Shifts all offer survival benefits at the cost of Hope and Discontent meters — making civilizational collapse feel genuinely earned.</p>" },
+            { id: "midnight-protocol", title: "Invisible, Inc.", category: "strategy", emoji: "🕵️", excerpt: "A turn-based stealth tactics game with procedurally generated corporate infiltrations.", meta: "Klei Entertainment | 2015 | Stealth Tactics", description: "<p>Invisible Inc. imposes an alarm clock: each turn advances enemy security, permanently narrowing safe corridors. Every mission demands improvisation under escalating pressure, and permadeath agents force recalculation of entire team compositions mid-campaign.</p>" },
+            { id: "diplomacy-is-not", title: "Diplomacy is Not an Option", category: "strategy", emoji: "🏹", excerpt: "A real-time RTS blending castle defence with massive empire management.", meta: "Door 407 | 2023 | RTS / Tower Defence", description: "<p>Diplomacy is Not an Option throws never-ending waves of thousands of enemies at the player's castle. Its macro layer demands territorial expansion and resource extraction to fund walls, towers, and armies, creating a multi-scale strategic simulation wrapped in deliberately comedic presentation.</p>" },
+            { id: "iron-harvest", title: "Iron Harvest", category: "strategy", emoji: "⚙️", excerpt: "A diesel-punk RTS set in an alternate 1920s Europe with giant mechs.", meta: "KING Art Games | 2020 | RTS", description: "<p>Iron Harvest adapts the Scythe board game's alternate history aesthetic into a cover-based RTS. Units can destroy terrain for new firing angles, and mech units require infantry support to counter their vulnerabilities, creating combined-arms tactical depth.</p>" },
+            { id: "bad-north", title: "Bad North", category: "strategy", emoji: "🛡️", excerpt: "A minimalist real-time tactics game defending Norse islands with tiny armies.", meta: "Plausible Concept | 2018 | Real-Time Tactics", description: "<p>Bad North condenses tactics into islands that can be surveyed in seconds. Three unit types — spearmen, archers, pikemen — must be positioned to exploit elevation and chokepoints before Viking hordes arrive. Permadeath commanders create attachment within its short-run structure.</p>" },
+
+            // ===================== PLATFORMER =====================
+            { id: "super-mario-odyssey", title: "Super Mario Odyssey", category: "platformer", emoji: "🎩", excerpt: "A joyful 3D platformer built around hat-throw possession mechanics.", meta: "Nintendo | 2017 | 3D Platformer", description: "<p>Odyssey's Cappy mechanic lets Mario throw his hat to capture and control enemies, objects, and NPCs, creating hundreds of unique movement puzzles. Its Moon-collecting structure is deliberately generous, hiding rewards in clever environmental observations rather than difficulty spikes.</p>" },
+            { id: "celeste", title: "Celeste", category: "platformer", emoji: "🏔️", excerpt: "A precision platformer with compassionate assist modes and a mental health narrative.", meta: "Maddy Thorson & Noel Berry | 2018 | Precision Platformer", description: "<p>Celeste synchronises its mechanical difficulty with its narrative: climbing the mountain gets harder as Madeline confronts her anxiety. Its Assist Mode — adjustable game speed, infinite stamina, invincibility — is framed as a valid option, not a failure state, making it one of gaming's most inclusive designs.</p>" },
+            { id: "hollow-knight-silksong", title: "Ori and the Will of the Wisps", category: "platformer", emoji: "✨", excerpt: "A visually breathtaking Metroidvania platformer with fluid spirit-dash movement.", meta: "Moon Studios | 2020 | Metroidvania Platformer", description: "<p>Will of the Wisps expands Ori's movement vocabulary with bash, burrow, and grapple abilities that chain into extended air combats. Its emotion-driven narrative, scored by a live orchestra, and hand-painted shader visuals set a benchmark for artistic ambition in the genre.</p>" },
+            { id: "ratchet-and-clank-rift", title: "Ratchet & Clank: Rift Apart", category: "platformer", emoji: "🌀", excerpt: "A dimension-hopping platformer showcasing SSD loading via on-screen rift portals.", meta: "Insomniac Games | 2021 | 3D Platformer", description: "<p>Rift Apart uses the PS5 SSD to load entire parallel dimensions within a single second via in-world portals. Players fire through rifts mid-combat to teleport across arenas, making loading speed a direct gameplay mechanic for the first time in the medium's history.</p>" },
+            { id: "yoshi-crafted", title: "Yoshi's Crafted World", category: "platformer", emoji: "🥚", excerpt: "A charming crafted-aesthetic platformer with fully reversible two-sided level design.", meta: "Good-Feel | 2019 | 2.5D Platformer", description: "<p>Crafted World builds each level from real craft materials — cardboard, cloth, and PVC — with a physically coherent reverse side. Completing a level's front path unlocks a mirrored rear playthrough revealing background secrets, doubling level design value per asset.</p>" },
+            { id: "shovel-knight", title: "Shovel Knight: Treasure Trove", category: "platformer", emoji: "⛏️", excerpt: "An NES-era love letter that surpasses its inspirations in design and content.", meta: "Yacht Club Games | 2014 | Platformer", description: "<p>Shovel Knight translates 8-bit NES constraints — limited colour palette, scrolling rules, sound chip music — into a deliberate design language. Its four standalone campaigns each feature entirely different mechanics, effectively making Treasure Trove a collection of four complete platformer games.</p>" },
+            { id: "little-big-planet", title: "LittleBigPlanet 3", category: "platformer", emoji: "🧶", excerpt: "A creative platformer where user-generated content became the primary draw.", meta: "Sumo Digital | 2014 | Platformer / Creator", description: "<p>LittleBigPlanet's 'Play, Create, Share' philosophy built one of gaming's most prolific user-content ecosystems. Players built millions of levels, minigames, and art installations using the in-game editor, turning the platform into an accessible creative sandbox.</p>" },
+            { id: "crash4", title: "Crash Bandicoot 4: It's About Time", category: "platformer", emoji: "🌀", excerpt: "A demanding modern revival with quantum mask powers altering physics rules.", meta: "Toys for Bob | 2020 | 3D Platformer", description: "<p>Crash 4 introduces Quantum Masks that temporarily invert gravity, slow time, or phase objects in and out of existence. Its 100% completion targets — collecting all gems and relics — requires near-perfect play across every level, delivering significant challenge depth beyond casual completion.</p>" },
+            { id: "astro-playroom", title: "Astro's Playroom", category: "platformer", emoji: "🎮", excerpt: "A DualSense tech demo platformer that became a beloved game in its own right.", meta: "Team Asobi | 2020 | 3D Platformer", description: "<p>Astro's Playroom uses every DualSense feature — haptic feedback, adaptive triggers, microphone, gyroscope — as core game mechanics. Running on sand, rain on plastic, spring tensions: each surface triggers a distinct haptic profile, making it the most tactile platformer ever made.</p>" },
+            { id: "prince-of-persia-sands", title: "Prince of Persia: The Sands of Time", category: "platformer", emoji: "⏳", excerpt: "The 2003 action platformer that defined fluid free-running and time-rewind mechanics.", meta: "Ubisoft Montreal | 2003 | Action Platformer", description: "<p>Sands of Time introduced the Dagger of Time — a rewind mechanic that let players undo mistakes in real time. Combined with wall-running, pole-vaulting, and acrobatic combat, it established the template that Assassin's Creed and countless free-running games would inherit.</p>" },
+            { id: "banjo-kazooie", title: "Banjo-Kazooie", category: "platformer", emoji: "🐻", excerpt: "Rare's N64 collectathon classic defining the collect-a-thon 3D platformer sub-genre.", meta: "Rare | 1998 | 3D Platformer", description: "<p>Banjo-Kazooie refined Mario 64's collectathon blueprint by tying moves to a shared ability pool between Banjo's strength and Kazooie's flight. Its nine worlds each centre on a unique thematic ruleset, and its irreverent NPC writing style created some of gaming's most memorable peripheral characters.</p>" },
+            { id: "kirby-forgotten-land", title: "Kirby and the Forgotten Land", category: "platformer", emoji: "⭐", excerpt: "Kirby's first full 3D adventure with Mouthful Mode object-absorption gimmicks.", meta: "HAL Laboratory | 2022 | 3D Platformer", description: "<p>Forgotten Land introduces Mouthful Mode, allowing Kirby to inhale objects too large to copy — cars, cones, water dispensers — gaining their unique physics properties. Its post-game Colosseum mode presents pure boss-rush challenge for players who want mechanical depth beyond the accessible main story.</p>" },
+
+            // ===================== HORROR =====================
+            { id: "resident-evil-village", title: "Resident Evil Village", category: "horror", emoji: "🏚️", excerpt: "A gothic horror action game blending Lady Dimitrescu's castle with supernatural creature encounters.", meta: "Capcom | 2021 | Survival Horror", description: "<p>Village uses four distinct monster-house biomes — vampire castle, mermaid lake, puppet workshop, fortress — each with a unique monster design philosophy. Its merchant system tracks treasure value and allows weapon upgrades with genuine economic scarcity pressure, balancing resource horror with action spectacle.</p>" },
+            { id: "alien-isolation", title: "Alien: Isolation", category: "horror", emoji: "👾", excerpt: "The most terrifying AI-driven stealth horror game ever made, running two separate AI systems.", meta: "Creative Assembly | 2014 | Stealth Horror", description: "<p>Isolation's Xenomorph is controlled by two separate AI subsystems: the Director AI identifies where the player is likely hiding and sends the alien to investigate, while the alien AI itself reacts only to local senses. This design prevents the player from ever learning a predictable pattern.</p>" },
+            { id: "amnesia-dark", title: "Amnesia: The Dark Descent", category: "horror", emoji: "🕯️", excerpt: "The game that defined modern first-person survival horror by removing all combat.", meta: "Frictional Games | 2010 | Survival Horror", description: "<p>Amnesia removes the player's ability to fight, creating pure helplessness. Its sanity mechanic degrades when the player looks at monsters or dwells in darkness, causing visual and audio distortion that blurs the line between game state and psychological breakdown. It launched the let's-play streaming format.</p>" },
+            { id: "outlast", title: "Outlast", category: "horror", emoji: "📷", excerpt: "A found-footage horror game where your only tool is a battery-draining camcorder.", meta: "Red Barrels | 2013 | Survival Horror", description: "<p>Outlast arms the player only with a camcorder whose night-vision mode drains batteries — a finite resource creating constant scarcity anxiety. Its asylum setting and realistic presentation horrified streaming audiences worldwide, proving that content creator playthrough reactions had become a primary horror marketing vector.</p>" },
+            { id: "silent-hill2", title: "Silent Hill 2", category: "horror", emoji: "🌫️", excerpt: "The psychological horror masterpiece that tailors monster design to protagonist guilt.", meta: "Konami | 2001 | Psychological Horror", description: "<p>Silent Hill 2's monsters — Pyramid Head, Mannequins, Nurses — are literal manifestations of James Sunderland's sexual guilt and violent impulses. The game's famous 'Leave' ending is only accessible by specific playstyle patterns tracked invisibly throughout, creating a meta-commentary on player behaviour.</p>" },
+            { id: "re-biohazard", title: "Resident Evil 7: Biohazard", category: "horror", emoji: "🏠", excerpt: "A franchise reinvention using first-person perspective to restore resource-management dread.", meta: "Capcom | 2017 | Survival Horror", description: "<p>Biohazard shifted Resident Evil from third-person spectacle back to first-person claustrophobia. The Baker family mansion operates as a coherent space with persistent logic — rooms remain disturbed after fights — restoring the original series' inventory management and backtracking horror formula.</p>" },
+            { id: "fnaf", title: "Five Nights at Freddy's", category: "horror", emoji: "🎭", excerpt: "The indie game that spawned a multimedia franchise from security camera resource management.", meta: "Scott Cawthon | 2014 | Survival Horror", description: "<p>FNAF reduces horror to a resource equation: power. Players manage a fixed nightly power budget across camera monitoring, door sealing, and light checking. The animatronic AI states are deliberately opaque, teaching players threat patterns through repeated fatal encounters.</p>" },
+            { id: "lethal-company", title: "Lethal Company", category: "horror", emoji: "💼", excerpt: "A co-op moon-scavenging horror game with dynamic creature AI and company quota pressure.", meta: "Zeekerss | 2023 | Co-op Horror", description: "<p>Lethal Company imposes a corporate quota that escalates each three-day cycle, forcing increasingly risky moon excursions. Its procedurally arranged interior maps ensure no two runs have the same layout, while creature AI adapts to team formations, creating genuine unpredictability in co-op spaces.</p>" },
+            { id: "soma", title: "SOMA", category: "horror", emoji: "🤖", excerpt: "A sci-fi horror game that uses body horror to ask profound questions about consciousness.", meta: "Frictional Games | 2015 | Sci-Fi Horror", description: "<p>SOMA takes place in a collapsed underwater PATHOS-II facility. Its horror derives less from monsters than from philosophical confrontations: What constitutes a person? Is a perfect digital copy of a mind the same entity? Its safe mode removes creature danger, proving the narrative alone carries the experience.</p>" },
+            { id: "dredge", title: "Dredge", category: "horror", emoji: "🎣", excerpt: "A fishing cozy game that gradually corrupts into Lovecraftian maritime horror.", meta: "Black Salt Games | 2023 | Narrative Horror", description: "<p>Dredge starts as a peaceful fishing management game and uses its day/night cycle to introduce escalating supernatural horror. Night fishing corrupts the player's sanity meter, causing increasingly disturbing hallucinations in the water below. The slow tonal shift is one of the most effective genre subversions in recent memory.</p>" },
+            { id: "darkwood", title: "Darkwood", category: "horror", emoji: "🌲", excerpt: "A top-down survival horror game with dynamic night siege mechanics.", meta: "Acid Wizard Studio | 2017 | Survival Horror", description: "<p>Darkwood replaces jump scares with sustained atmospheric dread. Players spend days scavenging a corrupted forest and nights barricading their hideout against creatures that learn barricade layouts between sieges. Its top-down perspective creates unique horror through limited peripheral vision.</p>" },
+            { id: "little-nightmares2", title: "Little Nightmares II", category: "horror", emoji: "🎪", excerpt: "A cinematic puzzle-platformer horror game with oppressive scale contrast design.", meta: "Tarsier Studios | 2021 | Puzzle Horror", description: "<p>Little Nightmares II uses extreme size scaling to create helplessness — protagonists are tiny against teachers, hunters, and broadcasters whose heads turn independently of their bodies. Its wordless narrative and expressionistic world-design communicate existential dread through pure visual metaphor.</p>" },
+
+            // ===================== FIGHTING =====================
+            { id: "mortal-kombat1", title: "Mortal Kombat 1", category: "fighting", emoji: "🩸", excerpt: "NetherRealm's rebooted timeline fighter with the Kameo system and cinematic story mode.", meta: "NetherRealm Studios | 2023 | 2D Fighter", description: "<p>MK1 introduces Kameo Fighters — assist characters drawn from series history — selectable independently of the main roster. The Invasion Mode replaces traditional towers with a board-game seasonal campaign. Its story mode cinematic presentation remains the genre's benchmark for narrative production value.</p>" },
+            { id: "guilty-gear-strive", title: "Guilty Gear -Strive-", category: "fighting", emoji: "🎸", excerpt: "Arc System Works' most accessible fighter, hiding enormous depth beneath clean visuals.", meta: "Arc System Works | 2021 | 2D Fighter", description: "<p>Strive simplifies Guilty Gear's complex roman cancel system without reducing its depth — wall break mechanics create distinct neutral, pressure, and punish paradigms per corner position. Its art direction, achieved by painting hand-drawn textures directly onto 3D models, is the most visually distinctive in the genre.</p>" },
+            { id: "street-fighter3", title: "Street Fighter III: 3rd Strike", category: "fighting", emoji: "🎯", excerpt: "The technical apex of 2D fighting, defined by the Parry mechanic.", meta: "Capcom | 1999 | 2D Fighter", description: "<p>3rd Strike elevated competitive play by replacing blocking with forward-tap Parries that negate all damage but require precise timing. Daigo Umehara's legendary 2004 EVO comeback — parrying 15 consecutive super-art hits — remains the most iconic moment in competitive gaming history.</p>" },
+            { id: "granblue-versus", title: "Granblue Fantasy Versus: Rising", category: "fighting", emoji: "⚔️", excerpt: "An accessible arc-system fighter with a simplified special input system for newcomers.", meta: "Cygames / Arc System Works | 2023 | 2D Fighter", description: "<p>Rising removes traditional quarter-circle and charge inputs in favour of a simplified skill button system, dramatically lowering the execution barrier for new players. Its RPG mode provides an introductory narrative context and currency for unlocking skins, bridging the gap between gacha and fighting game communities.</p>" },
+            { id: "samurai-shodown", title: "Samurai Shodown (2019)", category: "fighting", emoji: "🔪", excerpt: "A weapon-based fighter where a single hit can decide a round.", meta: "SNK | 2019 | Weapons Fighter", description: "<p>Samurai Shodown's damage values are calibrated so any hit from a sword represents a round-defining event. Its Rage mechanic builds under pressure and can manifest as a Rage Explosion reversal or be cashed for a single devastating Super attack, creating extreme risk-reward at low health.</p>" },
+            { id: "dragon-ball-fighterz", title: "Dragon Ball FighterZ", category: "fighting", emoji: "⚡", excerpt: "A visually faithful 3v3 anime fighter with beam-clash supermove cinematics.", meta: "Arc System Works | 2018 | 3v3 Fighter", description: "<p>FighterZ replicates Dragon Ball's visual language — screen-filling beam attacks, mid-air dashes, Sparking Blast transformations — in a 3v3 tag fighter format borrowed from Marvel vs Capcom. Its Dragon Rush mix-up system forces defensive decision-making under pressure during combo resets.</p>" },
+            { id: "melty-blood", title: "Melty Blood: Type Lumina", category: "fighting", emoji: "🌙", excerpt: "A popular anime fighter notable for its aerial dash combat and shield mechanic.", meta: "French Bread | 2021 | 2D Fighter", description: "<p>Type Lumina features a Moon Skill system where each character has three distinct loadout options with unique special move sets, tripling effective character variety. Its shield reversal system turns defensive play into an active mind-game, rewarding reads over passive blocking.</p>" },
+            { id: "virtua-fighter5", title: "Virtua Fighter 5: Ultimate Showdown", category: "fighting", emoji: "🥋", excerpt: "The 3D fighting game purist's choice, with no special meters or gimmicks.", meta: "Sega AM2 | 2021 | 3D Fighter", description: "<p>Virtua Fighter's design philosophy rejects super meters, comeback mechanics, and projectiles entirely. Combat resolves purely through strike/throw/guard triangle interactions, counter-hit state exploitation, and ring-out positioning. It remains the most technically pure 3D fighting game in existence.</p>" },
+            { id: "fantasy-strike", title: "Fantasy Strike", category: "fighting", emoji: "🌟", excerpt: "The most accessible fighting game ever made, designed for pad-one-button inputs.", meta: "Sirlin Games | 2019 | 2D Fighter", description: "<p>Fantasy Strike reduces every special move to a single button press with no directional inputs required, removing execution as a skill layer entirely. Its design isolates read and decision-making — the true core of fighting game competition — making it a valuable entry point for new competitive players.</p>" },
+
+            // ===================== SPORTS =====================
+            { id: "rocket-league", title: "Rocket League", category: "sports", emoji: "🚗", excerpt: "A physics-based vehicular soccer game with a ceiling for mechanical skill almost unreachable.", meta: "Psyonix | 2015 | Sports", description: "<p>Rocket League's skill ceiling emerges from boost management, aerial car rotation physics, and wall-ceiling navigation. Grandmaster play involves triple-resets, ceiling shots, and wave-dashes that require hundreds of hours to execute reliably. Its free-to-play transition massively expanded its global competitive ecosystem.</p>" },
+            { id: "pga-tour-2k23", title: "EA Sports PGA Tour", category: "sports", emoji: "⛳", excerpt: "The only officially licensed golf sim featuring all four Major championships.", meta: "EA Tiburon | 2023 | Sports Sim", description: "<p>EA Sports PGA Tour holds exclusive licensing to The Masters, The Open, US Open, and PGA Championship courses. Its swing mechanic adds a three-click precision timing layer and spin control over shot trajectory, combined with real-time course condition modelling for wind and moisture.</p>" },
+            { id: "tony-hawk-pro", title: "Tony Hawk's Pro Skater 1+2", category: "sports", emoji: "🛹", excerpt: "The definitive remaster of two iconic skateboarding games preserving the original score-chasing feel.", meta: "Vicarious Visions | 2020 | Sports", description: "<p>THPS 1+2 rebuilds both games in a new engine while faithfully preserving the original 2-minute run timer, gap trick system, and SKATE letter hunt objectives. Its create-a-skater and create-a-park modes support online sharing, dramatically extending the remaster's lifespan beyond nostalgia.</p>" },
+            { id: "f1-24", title: "F1 24", category: "sports", emoji: "🏎️", excerpt: "The official Formula 1 simulation with adaptive AI difficulty and a revamped My Team mode.", meta: "Codemasters | 2024 | Racing Sim", description: "<p>F1 24 introduces a revised physics model focused on realistic tyre thermal and degradation curves. Its Driver Career mode allows players to take over seats at real F1 teams, managing contract negotiations and performance targets across multi-season campaigns.</p>" },
+            { id: "ea-fc25", title: "EA Sports FC 25", category: "sports", emoji: "⚽", excerpt: "The latest iteration of the world's most popular football simulation with FC IQ tactical intelligence.", meta: "EA Sports | 2024 | Sports Sim", description: "<p>FC 25 introduces FC IQ, an overhaul to player role positioning and tactical AI that gives each player distinct responsibilities on and off the ball. Rush mode adds 5v5 small-sided matches to Ultimate Team, creating a faster-paced competitive format alongside traditional 11v11 play.</p>" },
+            { id: "nba2k25", title: "NBA 2K25", category: "sports", emoji: "🏀", excerpt: "The basketball simulation with the deepest MyCareer progression and most realistic player physics.", meta: "Visual Concepts | 2024 | Sports Sim", description: "<p>NBA 2K25 overhauls its dribbling system with a new Pro Play technology that maps real NBA footage directly onto game animations. Its City open-world narrative hub expands MyCareer with social activities, fashion systems, and online tournaments embedded in the same persistent server environment.</p>" },
+            { id: "mlb-the-show-24", title: "MLB The Show 24", category: "sports", emoji: "⚾", excerpt: "The definitive baseball simulation with cross-platform Diamond Dynasty card collecting.", meta: "San Diego Studio | 2024 | Sports Sim", description: "<p>The Show 24 refines its Plate Coverage Indicator (PCI) hitting system with new Perfect-Perfect hit trajectory rewards. Its Road to the Show mode now includes a full Storylines feature documenting real historical Negro Leagues players with hand-drawn cinematics.</p>" },
+            { id: "steep", title: "Riders Republic", category: "sports", emoji: "🏔️", excerpt: "A massive multiplayer outdoor sports sandbox spanning bike, ski, wing-suit, and snowboard.", meta: "Ubisoft Annecy | 2021 | Sports Sandbox", description: "<p>Riders Republic combines five national park environments into one seamless open map. Its Mass Race mode deploys 64 simultaneous players racing the same downhill course in a single physics-tracked server, creating chaotic collisions and momentum drafting in real time.</p>" },
+            { id: "efootball", title: "eFootball 2025", category: "sports", emoji: "🥅", excerpt: "Konami's free-to-play football sim rebuilt from the ground up on Unreal Engine.", meta: "Konami | 2024 | Sports Sim", description: "<p>eFootball 2025 positions itself as a pure football mechanics simulation, emphasising physical duel outcomes, body balance on the ball, and intelligent off-ball runs. Its Dream Team card-collecting mode competes directly with FIFA Ultimate Team while being free-to-play at its base tier.</p>" },
+
+            // ===================== INDIE =====================
+            { id: "stardew-valley", title: "Stardew Valley", category: "indie", emoji: "🌾", excerpt: "A solo-developed farming RPG that outsold most AAA games of its year.", meta: "ConcernedApe | 2016 | Farming RPG", description: "<p>Stardew Valley was built entirely by one developer over four years. Its multi-layered loop — farming, mining, fishing, relationship-building, and combat — is structured so that all activities feed into each other, creating genuine cross-system motivation. Version 1.6 and ongoing updates continue expanding the game eight years post-launch.</p>" },
+            { id: "undertale", title: "Undertale", category: "indie", emoji: "💛", excerpt: "A subversive RPG that weaponises genre expectations against the player.", meta: "Toby Fox | 2015 | Indie RPG", description: "<p>Undertale's Genocide and Pacifist routes deliver fundamentally different games. The combat system allows every enemy to be befriended instead of killed, and bosses react to prior save file data — noticing if you've previously harmed characters. Its fourth-wall breaks recontextualise the entire RPG genre's relationship with player violence.</p>" },
+            { id: "cuphead", title: "Cuphead", category: "indie", emoji: "☕", excerpt: "A 1930s-animation-styled boss-rush run-and-gun with extreme precision demands.", meta: "Studio MDHR | 2017 | Run-and-Gun", description: "<p>Cuphead hand-drew every frame of animation to replicate the rubber hose animation style of 1930s cartoons. Every boss fight is a multi-phase pattern study requiring memorisation of distinct projectile trajectories across 2-4 phases. Its DLC, The Delicious Last Course, is widely considered to surpass the base game's design quality.</p>" },
+            { id: "hades2", title: "Hades II", category: "indie", emoji: "🌙", excerpt: "The early access sequel expanding the mythological roguelite with new protagonist Melinoë.", meta: "Supergiant Games | 2024 | Action Roguelite", description: "<p>Hades II introduces Melinoë, Zagreus's sister, with a witch-combat framework focused on hexes and incantation resources rather than Zagreus's dodge-centric style. Its new Olympus surface region adds a second game structure alongside the underworld — doubling the content scope of an already substantial sequel.</p>" },
+            { id: "tunic", title: "Tunic", category: "indie", emoji: "📖", excerpt: "An isometric adventure game hiding its instruction manual as in-world collectable pages.", meta: "Andrew Shouldice | 2022 | Adventure", description: "<p>Tunic initially presents as a Zelda-like with no UI context. Hidden throughout the world are pages of an in-game instruction manual written in an indecipherable language. As players collect pages and decode the manual's script, mechanics that seemed like bugs reveal themselves as deeply intentional systems.</p>" },
+            { id: "dave-diver", title: "Dave the Diver", category: "indie", emoji: "🤿", excerpt: "A hybrid diving exploration and sushi restaurant management game.", meta: "MINTROCKET | 2023 | Adventure / Management", description: "<p>Dave the Diver splits its day into two phases: ocean diving for ingredients through procedurally varying depths, and evening restaurant management serving sushi to demanding customers. Its tonal whiplash between relaxed diving and frantic service creates a uniquely satisfying double-loop progression.</p>" },
+            { id: "loop-hero", title: "Loop Hero", category: "indie", emoji: "🔄", excerpt: "A deckbuilder roguelite where you place tiles to build the world your hero auto-battles through.", meta: "Four Quarters | 2021 | Deckbuilder Roguelite", description: "<p>Loop Hero removes direct combat control entirely — the hero fights automatically. Players instead place biome and enemy cards around the loop path, strategically creating threats that drop better loot. The meta-progression depends on recognising which tile synergies create manageable but rewarding risk loops.</p>" },
+            { id: "neon-white", title: "Neon White", category: "indie", emoji: "🃏", excerpt: "A card-based speedrunning FPS where every action is a disposable weapon.", meta: "Angel Matrix | 2022 | Speed Action", description: "<p>Neon White gives each weapon type a soul card that serves as both the weapon and an alternative traversal ability on discard — a pistol becomes a double jump, a shotgun a ground slam. Levels are scored on time, driving players to discover increasingly creative card-discard routing solutions.</p>" },
+            { id: "signalis", title: "SIGNALIS", category: "indie", emoji: "📡", excerpt: "A pixel-art survival horror CRPG inspired by Silent Hill and classic anime.", meta: "rose-engine | 2022 | Survival Horror", description: "<p>SIGNALIS presents its narrative through fragmented memories, unreliable documents, and environmental geometry, never explaining its science-fiction world directly. Its six-item inventory cap forces genuine resource triage, and its multiple endings depend on cumulative choice data tracked invisibly throughout.</p>" },
+            { id: "spiritfarer", title: "Spiritfarer", category: "indie", emoji: "⛵", excerpt: "A cozy management game about death, grief, and saying goodbye.", meta: "Thunder Lotus Games | 2020 | Management", description: "<p>Spiritfarer casts the player as a ferryman guiding deceased spirits to the afterlife. Each spirit represents a relationship with a unique personality arc culminating in an emotionally processed farewell. Its self-described 'cozy management game about death' tone is simultaneously warm and profoundly sad.</p>" },
+            { id: "inscryption", title: "Inscryption", category: "indie", emoji: "🃏", excerpt: "A deckbuilding horror game that subverts its own genre identity multiple times.", meta: "Daniel Mullins | 2021 | Deckbuilder / Meta-Horror", description: "<p>Inscryption begins as a Slay the Spire-inspired roguelite played against a sinister gamemaster and gradually reveals itself to be three entirely different games layered within a metafictional horror narrative. Its willingness to abandon its own gameplay system mid-story is one of the most audacious structural decisions in game design history.</p>" },
+            { id: "disco-elysium-indie", title: "Return of the Obra Dinn", category: "indie", emoji: "🚢", excerpt: "A 1-bit mystery game where you reconstruct the deaths of 60 shipwrecked sailors.", meta: "Lucas Pope | 2018 | Mystery Puzzle", description: "<p>Obra Dinn gives players a magical pocket watch that replays the final moment of any dead person's life. Using forensic deduction across overlapping flashbacks, players identify 60 crew members' fates by cross-referencing journals, face recognition, and dialogue inference — with no direct confirmation until enough linked answers are submitted together.</p>" },
+            { id: "placid-plastic", title: "Unpacking", category: "indie", emoji: "📦", excerpt: "A zen puzzle game telling a life story entirely through the objects a person owns.", meta: "Witch Beam | 2021 | Puzzle", description: "<p>Unpacking never shows or names its protagonist. Instead, players unpack moving boxes across eight apartments spanning decades of a life, reading biographical detail from what objects appear, which are left behind, and what new items join the collection. It is one of the purest examples of environmental storytelling ever built.</p>" }
+        ];
+
+        // Safe Initialization Check
+        document.addEventListener("DOMContentLoaded", () => {
+            const gridContainer = document.getElementById('encyclopedia-grid');
+            const searchBar = document.getElementById('search-bar');
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const modal = document.getElementById('entry-modal');
+            const closeModalBtn = document.getElementById('close-modal');
+            const modalBody = document.getElementById('modal-body-content');
+
+            let currentCategory = 'all';
+            let searchQuery = '';
+
+            function renderCards() {
+                if (!gridContainer) return;
+                gridContainer.innerHTML = '';
+
+                const filteredData = encyclopediaData.filter(item => {
+                    const matchesCategory = currentCategory === 'all' || item.category === currentCategory;
+                    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                          item.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                          item.description.toLowerCase().includes(searchQuery.toLowerCase());
+                    return matchesCategory && matchesSearch;
+                });
+
+                if(filteredData.length === 0) {
+                    gridContainer.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); margin-top: 2rem;">No entries found fitting your criteria.</p>`;
+                    return;
+                }
+
+                filteredData.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.setAttribute('data-cat', item.category);
+                    card.innerHTML = `
+                        <div class="card-banner">${item.emoji}</div>
+                        <div class="card-content">
+                            <div class="card-category">${{games:'iconic game',rpg:'⚔️ RPG',action:'💥 Action',strategy:'🧠 Strategy',platformer:'🍄 Platformer',horror:'👁️ Horror',fighting:'🥊 Fighting',sports:'🏆 Sports',indie:'🌱 Indie',genres:'genre',mechanics:'mechanic',history:'history',hardware:'hardware'}[item.category] || item.category}</div>
+                            <h2 class="card-title">${item.title}</h2>
+                            <p class="card-excerpt">${item.excerpt}</p>
+                            <div class="card-footer">Click to view database log →</div>
+                        </div>
+                    `;
+                    card.addEventListener('click', () => openModal(item));
+                    gridContainer.appendChild(card);
+                });
+            }
+
+            function openModal(item) {
+                if (!modalBody || !modal) return;
+                modalBody.innerHTML = `
+                    <div class="modal-header-tag">// Database Entry: ${item.category.toUpperCase()}</div>
+                    <h1 class="modal-title">${item.emoji} ${item.title}</h1>
+                    <div class="modal-meta">${item.meta}</div>
+                    <div class="modal-description">${item.description}</div>
+                `;
+                modal.classList.add('active');
+            }
+
+            function closeModal() {
+                if (modal) modal.classList.remove('active');
+            }
+
+            // Event Listeners setup
+            if (searchBar) {
+                searchBar.addEventListener('input', (e) => {
+                    searchQuery = e.target.value;
+                    renderCards();
+                });
+            }
+
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    currentCategory = button.getAttribute('data-category');
+                    renderCards();
+                });
+            });
+
+            if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+            
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) closeModal();
+                });
+            }
+
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeModal();
+            });
+
+            // Initial Draw
+            renderCards();
+        });
+
+        
+
+
+        
+    </script>
+
+    
+</body>
+</html>
